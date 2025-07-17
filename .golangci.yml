@@ -36,8 +36,6 @@ linters:
       allow-packages:
         - ex
   exclusions:
-    generated: lax
-    warn-unused: true
     rules:
       # simple rules for examples and tests
       - path: _test\.go
