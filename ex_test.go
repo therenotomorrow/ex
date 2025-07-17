@@ -159,6 +159,8 @@ func TestCause(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
+
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -313,6 +315,8 @@ func TestXError(t *testing.T) { //nolint:funlen // don't want to separate XError
 		}
 
 		for _, test := range tests {
+			test := test
+
 			t.Run(test.name, func(t *testing.T) {
 				t.Parallel()
 

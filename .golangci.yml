@@ -5,6 +5,9 @@ linters:
   disable:
     # deprecated
     - wsl
+    # because of min golang version support (current 1.21)
+    - copyloopvar
+    - intrange
   settings:
     depguard:
       rules:
@@ -79,6 +82,6 @@ output:
   show-stats: true
 
 run:
-  go: '1.24'
+  go: '1.21'
   allow-parallel-runners: true
   timeout: 5m
