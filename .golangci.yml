@@ -1,0 +1,84 @@
+version: '2'
+
+linters:
+  default: all
+  disable:
+    # deprecated
+    - wsl
+  settings:
+    depguard:
+      rules:
+        main:
+          list-mode: strict
+          files:
+            - '$all'
+            - '!$test'
+          allow:
+            - 'errors'
+        tests:
+          list-mode: strict
+          files:
+            - '$test'
+          allow:
+            - '$gostd'
+            - 'github.com/stretchr/testify'
+            - 'github.com/therenotomorrow/ex'
+    gocritic:
+      enable-all: true
+    ireturn:
+      allow:
+        - error
+        - generic
+    testpackage:
+      allow-packages:
+        - ex
+  exclusions:
+    generated: lax
+    warn-unused: true
+    rules:
+      # simple rules for examples and tests
+      - path: _test\.go
+        linters:
+          - err113
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+    gofmt:
+      simplify: true
+      rewrite-rules:
+        - pattern: 'interface{}'
+          replacement: 'any'
+    golines:
+      max-len: 120
+      tab-len: 4
+      shorten-comments: true
+      chain-split-dots: true
+
+issues:
+  fix: true
+  max-same-issues: 0
+  max-issues-per-linter: 0
+
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
+      colors: true
+  show-stats: true
+
+run:
+  go: '1.24'
+  allow-parallel-runners: true
+  timeout: 5m
