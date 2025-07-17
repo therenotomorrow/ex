@@ -15,9 +15,6 @@ Shows another way for working with the ~~ex~~ errors in Go. :dancer:
   <a href="https://github.com/therenotomorrow/ex/blob/master/LICENSE" target="_blank">
     <img src="https://img.shields.io/github/license/therenotomorrow/ex?color=388E3C" alt="License">
   </a>
-</div>
-
-<div>
   <a href="https://github.com/therenotomorrow/ex/actions/workflows/ci.yml" target="_blank">
     <img src="https://github.com/therenotomorrow/ex/actions/workflows/ci.yml/badge.svg" alt="ci status">
   </a>
