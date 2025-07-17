@@ -1,6 +1,6 @@
 # `ex`
 
-Shows another way for working with the ~~ex~~ errors in Go.:dancer:
+Shows another way for working with the ~~ex~~ (:dancer:) errors in Go.
 
 <div>
   <a href="https://github.com/therenotomorrow/ex/releases" target="_blank">
