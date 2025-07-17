@@ -1,10 +1,10 @@
 # `ex`
 
-`ex` shows another way :dancer: for working with the errors in Go.
+Shows another way for working with the ~~ex~~ errors in Go. :dancer:
 
 <div>
   <a href="https://github.com/therenotomorrow/ex/releases" target="_blank">
-    <img src="https://img.shields.io/github/v/release/therenotomorrow/ex" alt="GitHub releases">
+    <img src="https://img.shields.io/github/v/release/therenotomorrow/ex?color=FBC02D" alt="GitHub releases">
   </a>
   <a href="https://go.dev/doc/go1.21" target="_blank">
     <img src="https://img.shields.io/badge/Go-%3E%3D%201.21-blue.svg" alt="Go 1.21">
@@ -13,7 +13,7 @@
     <img src="https://godoc.org/github.com/therenotomorrow/ex?status.svg" alt="Go reference">
   </a>
   <a href="https://github.com/therenotomorrow/ex/blob/master/LICENSE" target="_blank">
-    <img src="https://img.shields.io/github/license/therenotomorrow/ex" alt="Go report">
+    <img src="https://img.shields.io/github/license/therenotomorrow/ex?color=388E3C" alt="License">
   </a>
 </div>
 
@@ -25,7 +25,7 @@
     <img src="https://goreportcard.com/badge/github.com/therenotomorrow/ex" alt="Go report">
   </a>
   <a href="https://codecov.io/gh/therenotomorrow/ex" target="_blank">
-    <img src="https://img.shields.io/codecov/c/github/therenotomorrow/ex" alt="Codecov">
+    <img src="https://img.shields.io/codecov/c/github/therenotomorrow/ex?color=546E7A" alt="Codecov">
   </a>
 </div>
 
