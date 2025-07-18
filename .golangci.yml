@@ -30,19 +30,19 @@ linters:
             - 'github.com/therenotomorrow/ex'
     gocritic:
       enable-all: true
+      disabled-checks:
+        - unnamedResult
     ireturn:
       allow:
         - error
         - generic
-    testpackage:
-      allow-packages:
-        - ex
   exclusions:
     rules:
       # simple rules for examples and tests
       - path: _test\.go
         linters:
           - err113
+          - funlen
 
 formatters:
   enable:

@@ -54,7 +54,7 @@ func main() {
 	// Extract the original, underlying error
 	cause := ex.Cause(err)
 	fmt.Println(cause)       // why not?
-	fmt.Println(err.Error()) // xxx error
+	fmt.Println(err.Error()) // xxx error (why not?)
 }
 ```
 

@@ -203,7 +203,7 @@ func ExampleExtraError_Reason() {
 	// Cause: email address is missing
 }
 
-// ExampleC shows how to use an ex.C alias.
+// ExampleC shows how to use an C alias.
 func ExampleC() {
 	const useAliasErr = ex.C("validation failed")
 
