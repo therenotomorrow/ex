@@ -16,9 +16,9 @@ func TestNew(t *testing.T) {
 
 	err := New(errText)
 
-	assert.IsType(t, new(XError), err)
+	assert.IsType(t, new(ExtraError), err)
 	require.NoError(t, err.cause)
-	assert.EqualError(t, err.label, errText)
+	assert.EqualError(t, err.err, errText)
 }
 
 func TestFrom(t *testing.T) {
@@ -32,12 +32,12 @@ func TestFrom(t *testing.T) {
 			err    = From(stdErr)
 		)
 
-		assert.IsType(t, new(XError), err)
-		require.ErrorIs(t, err.label, stdErr)
+		assert.IsType(t, new(ExtraError), err)
+		require.ErrorIs(t, err.err, stdErr)
 		require.NoError(t, err.cause)
 	})
 
-	t.Run("wrapping an existing XError", func(t *testing.T) {
+	t.Run("wrapping an existing ExtraError", func(t *testing.T) {
 		t.Parallel()
 
 		var (
@@ -46,7 +46,7 @@ func TestFrom(t *testing.T) {
 			err          = From(originalXErr)
 		)
 
-		assert.IsType(t, new(XError), err)
+		assert.IsType(t, new(ExtraError), err)
 		assert.Equal(t, err, originalXErr)
 		require.ErrorIs(t, err.cause, causeErr)
 		assert.NotSame(t, originalXErr, err)
@@ -59,11 +59,11 @@ func TestUnexpected(t *testing.T) {
 	var (
 		causeErr = errors.New("critical failure")
 		err      = Unexpected(causeErr)
-		xer      = new(XError)
+		xer      = new(ExtraError)
 	)
 
 	require.ErrorAs(t, err, &xer)
-	require.ErrorIs(t, xer.label, ErrUnexpected)
+	require.ErrorIs(t, xer.err, ErrUnexpected)
 	require.ErrorIs(t, xer.cause, causeErr)
 }
 
@@ -132,14 +132,14 @@ func TestCause(t *testing.T) {
 		name string
 	}{
 		{
-			name: "nested XError",
+			name: "nested ExtraError",
 			args: args{err: New("level1").Because(New("level2").Because(rootCause))},
 			want: rootCause,
 		},
 		{
-			name: "XError with no cause",
+			name: "ExtraError with no cause",
 			args: args{err: New("level1")},
-			want: LError("level1"),
+			want: ConstError("level1"),
 		},
 		{
 			name: "standard error",
@@ -152,7 +152,7 @@ func TestCause(t *testing.T) {
 			want: nil,
 		},
 		{
-			name: "XError wrapping a standard error",
+			name: "ExtraError wrapping a standard error",
 			args: args{err: From(rootCause)},
 			want: rootCause,
 		},
@@ -171,22 +171,22 @@ func TestCause(t *testing.T) {
 	}
 }
 
-func TestLError(t *testing.T) {
+func TestConstError(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Because", func(t *testing.T) {
 		t.Parallel()
 
-		const constErr = LError("base error")
+		const constErr = ConstError("base error")
 
 		var (
 			causeErr = errors.New("the underlying cause")
 			err      = constErr.Because(causeErr)
-			xer      = new(XError)
+			xer      = new(ExtraError)
 		)
 
 		require.ErrorAs(t, err, &xer)
-		require.ErrorIs(t, xer.label, constErr)
+		require.ErrorIs(t, xer.err, constErr)
 		require.ErrorIs(t, xer.cause, causeErr)
 	})
 
@@ -194,37 +194,45 @@ func TestLError(t *testing.T) {
 		t.Parallel()
 
 		const (
-			constErr   = LError("base error")
+			constErr   = ConstError("base error")
 			reasonText = "a specific reason"
 		)
 
 		var (
 			err = constErr.Reason(reasonText)
-			xer = new(XError)
+			xer = new(ExtraError)
 		)
 
 		require.ErrorAs(t, err, &xer)
-		require.ErrorIs(t, xer.label, constErr)
-		require.ErrorIs(t, xer.cause, LError(reasonText))
+		require.ErrorIs(t, xer.err, constErr)
+		require.ErrorIs(t, xer.cause, ConstError(reasonText))
 	})
 
 	t.Run("Error", func(t *testing.T) {
 		t.Parallel()
 
-		const err = LError("test error")
+		const err = ConstError("test error")
 
-		assert.Equal(t, "test error", err.Error())
+		assert.Equal(t, "test error", error(err).Error())
+	})
+
+	t.Run("String", func(t *testing.T) {
+		t.Parallel()
+
+		const err = ConstError("test error")
+
+		assert.Equal(t, "test error", err.String())
 	})
 }
 
-func TestXError(t *testing.T) { //nolint:funlen // don't want to separate XError.Is tests from Suite
+func TestExtraError(t *testing.T) { //nolint:funlen // don't want to separate ExtraError.Is tests from Suite
 	t.Parallel()
 
-	const baseErr = LError("base error")
+	const baseErr = ConstError("base error")
 
 	var (
 		causeErr = errors.New("root cause")
-		xErr     = &XError{label: baseErr, cause: causeErr}
+		xErr     = &ExtraError{err: baseErr, cause: causeErr}
 	)
 
 	t.Run("Because", func(t *testing.T) {
@@ -233,11 +241,11 @@ func TestXError(t *testing.T) { //nolint:funlen // don't want to separate XError
 		var (
 			newCause = errors.New("a different cause")
 			err      = xErr.Because(newCause)
-			xer      = new(XError)
+			xer      = new(ExtraError)
 		)
 
 		require.ErrorAs(t, err, &xer)
-		require.ErrorIs(t, xer.label, xErr.label)
+		require.ErrorIs(t, xer.err, xErr.err)
 		require.ErrorIs(t, xer.cause, newCause)
 	})
 
@@ -247,18 +255,44 @@ func TestXError(t *testing.T) { //nolint:funlen // don't want to separate XError
 		var (
 			reasonText = "a new reason"
 			err        = xErr.Reason(reasonText)
-			xer        = new(XError)
+			xer        = new(ExtraError)
 		)
 
 		require.ErrorAs(t, err, &xer)
-		require.ErrorIs(t, xer.label, xErr.label)
-		require.ErrorIs(t, xer.cause, LError(reasonText))
+		require.ErrorIs(t, xer.err, xErr.err)
+		require.ErrorIs(t, xer.cause, ConstError(reasonText))
 	})
 
 	t.Run("Error", func(t *testing.T) {
 		t.Parallel()
 
-		assert.Equal(t, "base error", xErr.Error())
+		var (
+			emptyErr     error = new(ExtraError)
+			onlyErr      error = &ExtraError{err: baseErr, cause: nil}
+			rootErr      error = ConstError("root error")
+			deepCauseErr error = From(xErr.Because(From(ConstError("something wrong")).Because(rootErr)))
+		)
+
+		assert.Empty(t, emptyErr.Error())
+		assert.Equal(t, "base error", onlyErr.Error())
+		assert.Equal(t, "base error (root cause)", xErr.Error())
+		assert.Equal(t, `base error (root error)`, deepCauseErr.Error())
+	})
+
+	t.Run("String", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			emptyErr     = new(ExtraError)
+			onlyErr      = &ExtraError{err: baseErr, cause: nil}
+			rootErr      = ConstError("root error")
+			deepCauseErr = From(xErr.Because(From(ConstError("something wrong")).Because(rootErr)))
+		)
+
+		assert.JSONEq(t, `{}`, emptyErr.String())
+		assert.JSONEq(t, `{"error":"base error"}`, onlyErr.String())
+		assert.JSONEq(t, `{"cause":"root cause","error":"base error"}`, xErr.String())
+		assert.JSONEq(t, `{"cause":"something wrong (root error)","error":"base error"}`, deepCauseErr.String())
 	})
 
 	t.Run("Unwrap", func(t *testing.T) {
@@ -278,37 +312,37 @@ func TestXError(t *testing.T) { //nolint:funlen // don't want to separate XError
 
 		tests := []struct {
 			args args
-			xer  *XError
+			xer  *ExtraError
 			name string
 			want bool
 		}{
 			{
 				name: "target is the wrapped error",
-				xer:  &XError{label: baseErr, cause: causeErr},
+				xer:  &ExtraError{err: baseErr, cause: causeErr},
 				args: args{target: baseErr},
 				want: true,
 			},
 			{
 				name: "target is the cause",
-				xer:  &XError{label: baseErr, cause: causeErr},
+				xer:  &ExtraError{err: baseErr, cause: causeErr},
 				args: args{target: causeErr},
 				want: true,
 			},
 			{
 				name: "target is a different error",
-				xer:  &XError{label: baseErr, cause: causeErr},
+				xer:  &ExtraError{err: baseErr, cause: causeErr},
 				args: args{target: errAnother},
 				want: false,
 			},
 			{
 				name: "no cause, target matches wrapped error",
-				xer:  &XError{label: baseErr, cause: nil},
+				xer:  &ExtraError{err: baseErr, cause: nil},
 				args: args{target: baseErr},
 				want: true,
 			},
 			{
 				name: "no cause, target does not match",
-				xer:  &XError{label: baseErr, cause: nil},
+				xer:  &ExtraError{err: baseErr, cause: nil},
 				args: args{target: errAnother},
 				want: false,
 			},
@@ -326,4 +360,13 @@ func TestXError(t *testing.T) { //nolint:funlen // don't want to separate XError
 			})
 		}
 	})
+}
+
+func TestC(t *testing.T) {
+	t.Parallel()
+
+	const constErr = C("const error")
+
+	assert.IsType(t, constErr, ConstError(""))
+	assert.EqualError(t, constErr, string(constErr))
 }

@@ -17,7 +17,9 @@ linters:
             - '$all'
             - '!$test'
           allow:
+            - 'encoding/json'
             - 'errors'
+            - 'fmt'
         tests:
           list-mode: strict
           files:

@@ -1,10 +1,10 @@
 // Package ex shows another way for working with the errors in Go.
-// The idea is simple - use some "label" or "slug" for errors and
+// The idea is simple - use some "err" or "slug" for errors and
 // wrap or unwrap the exact "cause" or "reason" within.
 //
 // Two main things:
-//   - LError - create error as the constants (aka "label", "slug", etc.)
-//   - XError - extend errors with the internals (aka "cause", "reason", etc.)
+//   - ConstError - create error as the constants (aka "err", "slug", etc.)
+//   - ExtraError - extend errors with the internals (aka "cause", "reason", etc.)
 //
 // Example will be better:
 //
@@ -20,8 +20,8 @@
 //	func main() {
 //		// 1. Define sentinel errors for your domain. These are the error "identities".
 //		var (
-//			ErrUserNotFound = ex.LError("user not found")
-//			ErrDatabase     = ex.LError("database error")
+//			ErrUserNotFound = ex.ConstError("user not found")
+//			ErrDatabase     = ex.ConstError("database error")
 //		)
 //
 //		// 2. Simulate a low-level error (the root cause).

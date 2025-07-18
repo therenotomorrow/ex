@@ -47,9 +47,9 @@ import (
 func main() {
 	// Create a deeply nested error
 	stdErr := errors.New("standard error")
-	labelErr := ex.LError("ex const error")
+	constErr := ex.ConstError("ex const error")
 
-	err := ex.New("xxx error").Because(ex.From(stdErr).Because(labelErr.Reason("why not?")))
+	err := ex.New("xxx error").Because(ex.From(stdErr).Because(constErr.Reason("why not?")))
 
 	// Extract the original, underlying error
 	cause := ex.Cause(err)
@@ -72,7 +72,7 @@ This project is licensed under the terms of the MIT license.
 
 ```shell
 go version
-# go version go1.24.3
+# go version go1.21.0
 
 just --version
 # just 1.40.0

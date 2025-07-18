@@ -16,12 +16,12 @@ func ExampleNew() {
 	// repository: user not found
 }
 
-// ExampleFrom demonstrates converting a standard error into an XError.
+// ExampleFrom demonstrates converting a standard error into an ExtraError.
 func ExampleFrom() {
 	// Simulate an error from an external package
 	originalErr := io.EOF
 
-	// Wrap it in an XError to add context
+	// Wrap it in an ExtraError to add context
 	err := ex.From(originalErr)
 	fmt.Println(err)
 
@@ -52,7 +52,7 @@ func ExampleUnexpected() {
 		fmt.Println("This was an unexpected error.")
 	}
 	// Output:
-	// unexpected
+	// unexpected (connection refused)
 	// connection refused
 	// This was an unexpected error.
 }
@@ -130,28 +130,28 @@ func ExampleCause() {
 	// Create another deeply nested error
 	ioErr := errors.New("disk write error")
 	dbErr := ex.New("failed to save user").Because(ioErr)
-	authErr := ex.LError("permission denied").Because(dbErr)
+	authErr := ex.ConstError("permission denied").Because(dbErr)
 	finalErr := ex.Unexpected(authErr)
 
 	// Extract everything that we could
 	fmt.Printf("Error message: %s\n", finalErr)
 	fmt.Printf("Is critical: %t\n", errors.Is(finalErr, ex.ErrUnexpected))
-	fmt.Printf("Is permission error: %t\n", errors.Is(finalErr, ex.LError("permission denied")))
+	fmt.Printf("Is permission error: %t\n", errors.Is(finalErr, ex.ConstError("permission denied")))
 
 	// With the another root cause
 	rootCause2 := ex.Cause(finalErr)
 	fmt.Printf("Root cause: %s\n", rootCause2)
 	// Output:
 	// root cause: disk is full
-	// Error message: unexpected
+	// Error message: unexpected (disk write error)
 	// Is critical: true
 	// Is permission error: true
 	// Root cause: disk write error
 }
 
-// ExampleLError_Because shows how to add a causal error.
-func ExampleLError_Because() {
-	ErrPayment := ex.LError("payment failed")
+// ExampleConstError_Because shows how to add a causal error.
+func ExampleConstError_Because() {
+	ErrPayment := ex.ConstError("payment failed")
 	apiErr := errors.New("stripe: invalid API key")
 
 	err := ErrPayment.Because(apiErr)
@@ -159,25 +159,25 @@ func ExampleLError_Because() {
 	fmt.Println(err)
 	fmt.Println("Cause:", ex.Cause(err))
 	// Output:
-	// payment failed
+	// payment failed (stripe: invalid API key)
 	// Cause: stripe: invalid API key
 }
 
-// ExampleLError_Reason shows how to add a cause with a simple text description.
-func ExampleLError_Reason() {
-	ErrValidation := ex.LError("validation failed")
+// ExampleConstError_Reason shows how to add a cause with a simple text description.
+func ExampleConstError_Reason() {
+	ErrValidation := ex.ConstError("validation failed")
 
 	err := ErrValidation.Reason("email address is missing")
 
 	fmt.Println(err)
 	fmt.Println("Cause:", ex.Cause(err))
 	// Output:
-	// validation failed
+	// validation failed (email address is missing)
 	// Cause: email address is missing
 }
 
-// ExampleXError_Because shows how to add a causal error.
-func ExampleXError_Because() {
+// ExampleExtraError_Because shows how to add a causal error.
+func ExampleExtraError_Because() {
 	ErrPayment := ex.New("payment failed")
 	apiErr := errors.New("stripe: invalid API key")
 
@@ -186,12 +186,12 @@ func ExampleXError_Because() {
 	fmt.Println(err)
 	fmt.Println("Cause:", ex.Cause(err))
 	// Output:
-	// payment failed
+	// payment failed (stripe: invalid API key)
 	// Cause: stripe: invalid API key
 }
 
-// ExampleXError_Reason shows how to add a cause with a simple text description.
-func ExampleXError_Reason() {
+// ExampleExtraError_Reason shows how to add a cause with a simple text description.
+func ExampleExtraError_Reason() {
 	ErrValidation := ex.New("validation failed")
 
 	err := ErrValidation.Reason("email address is missing")
@@ -199,6 +199,15 @@ func ExampleXError_Reason() {
 	fmt.Println(err)
 	fmt.Println("Cause:", ex.Cause(err))
 	// Output:
-	// validation failed
+	// validation failed (email address is missing)
 	// Cause: email address is missing
+}
+
+// ExampleC shows how to use an ex.C alias.
+func ExampleC() {
+	const useAliasErr = ex.C("validation failed")
+
+	fmt.Println(useAliasErr)
+	// Output:
+	// validation failed
 }
