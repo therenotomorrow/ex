@@ -8,7 +8,7 @@ import (
 	"github.com/therenotomorrow/ex"
 )
 
-// ExampleNew demonstrates creating a basic error.
+// Demonstrates creating a basic error.
 func ExampleNew() {
 	err := ex.New("repository: user not found")
 	fmt.Println(err)
@@ -16,7 +16,7 @@ func ExampleNew() {
 	// repository: user not found
 }
 
-// ExampleFrom demonstrates converting a standard error into an ExtraError.
+// Demonstrates converting a standard error into an ExtraError.
 func ExampleFrom() {
 	// Simulate an error from an external package
 	originalErr := io.EOF
@@ -34,7 +34,7 @@ func ExampleFrom() {
 	// Error is io.EOF
 }
 
-// ExampleUnexpected demonstrates wrapping an unexpected error with a standard message.
+// Demonstrates wrapping an unexpected error with a standard message.
 func ExampleUnexpected() {
 	// An unexpected database error occurs
 	dbErr := errors.New("connection refused")
@@ -57,7 +57,7 @@ func ExampleUnexpected() {
 	// This was an unexpected error.
 }
 
-// ExampleMust demonstrates its use in situations where an error is not want.
+// Demonstrates its use in situations where an error is not want.
 func ExampleMust() {
 	// This function simulates a call that should not fail
 	mightReturnValue := func() (string, error) {
@@ -87,7 +87,7 @@ func ExampleMust() {
 	// Recovered from panic: something went wrong
 }
 
-// ExampleMustDo demonstrates its use in situations where an error is not want.
+// Demonstrates its use in situations where an error is not want.
 func ExampleMustDo() {
 	// This function simulates a call that should not fail
 	mightNoPanic := func() error {
@@ -115,7 +115,7 @@ func ExampleMustDo() {
 	// Recovered from panic: something went wrong
 }
 
-// ExampleCause shows how to find the root cause of a nested error.
+// Shows how to find the root cause of a nested error.
 func ExampleCause() {
 	// Create a deeply nested error
 	rootCause := errors.New("root cause: disk is full")
@@ -138,7 +138,7 @@ func ExampleCause() {
 	fmt.Printf("Is critical: %t\n", errors.Is(finalErr, ex.ErrUnexpected))
 	fmt.Printf("Is permission error: %t\n", errors.Is(finalErr, ex.ConstError("permission denied")))
 
-	// With the another root cause
+	// With another root cause
 	rootCause2 := ex.Cause(finalErr)
 	fmt.Printf("Root cause: %s\n", rootCause2)
 	// Output:
@@ -149,7 +149,7 @@ func ExampleCause() {
 	// Root cause: disk write error
 }
 
-// ExampleConstError_Because shows how to add a causal error.
+// Shows how to add a causal error for ConstError.
 func ExampleConstError_Because() {
 	ErrPayment := ex.ConstError("payment failed")
 	apiErr := errors.New("stripe: invalid API key")
@@ -163,7 +163,7 @@ func ExampleConstError_Because() {
 	// Cause: stripe: invalid API key
 }
 
-// ExampleConstError_Reason shows how to add a cause with a simple text description.
+// Shows how to add a cause with a simple text description for ConstError.
 func ExampleConstError_Reason() {
 	ErrValidation := ex.ConstError("validation failed")
 
@@ -176,7 +176,7 @@ func ExampleConstError_Reason() {
 	// Cause: email address is missing
 }
 
-// ExampleExtraError_Because shows how to add a causal error.
+// Shows how to add a causal error for ExtraError.
 func ExampleExtraError_Because() {
 	ErrPayment := ex.New("payment failed")
 	apiErr := errors.New("stripe: invalid API key")
@@ -190,7 +190,7 @@ func ExampleExtraError_Because() {
 	// Cause: stripe: invalid API key
 }
 
-// ExampleExtraError_Reason shows how to add a cause with a simple text description.
+// Shows how to add a cause with a simple text description for ExtraError.
 func ExampleExtraError_Reason() {
 	ErrValidation := ex.New("validation failed")
 
@@ -203,7 +203,7 @@ func ExampleExtraError_Reason() {
 	// Cause: email address is missing
 }
 
-// ExampleC shows how to use an C alias.
+// Shows how to use a C alias.
 func ExampleC() {
 	const useAliasErr = ex.C("validation failed")
 

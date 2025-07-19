@@ -5,7 +5,7 @@ BIN := justfile_directory() / ".bin"
 
 [private]
 default:
-    @just --list
+    @just --list --unsorted
 
 # ---- golangci-lint
 
@@ -19,6 +19,7 @@ install-golangci-lint:
     mv {{ GOLANGCI_LINT_PATH }} {{ GOLANGCI_LINT }}
 
 [doc('Run static analysis using `golangci-lint` to detect code issues')]
+[group('code')]
 lint:
     @if test ! -e {{ GOLANGCI_LINT }}; then just install-golangci-lint; fi
     {{ GOLANGCI_LINT }} run ./...
@@ -35,6 +36,7 @@ install-fieldaligment:
     mv {{ FIELDALIGNMENT_PATH }} {{ FIELDALIGNMENT }}
 
 [doc('Reorder struct fields using `fieldalignment` to improve memory layout')]
+[group('code')]
 align:
     @if test ! -e {{ FIELDALIGNMENT }}; then just install-fieldaligment; fi
     {{ FIELDALIGNMENT }} --fix ./...
@@ -51,7 +53,8 @@ install-godoc:
     mv {{ GODOC_PATH }} {{ GODOC }}
 
 [doc('Run documentation server using `godoc`')]
-docs port='8000':
+[group('docs')]
+docs port='6060':
     @if test ! -e {{ GODOC }}; then just install-godoc; fi
     @echo http://127.0.0.1:{{ port }}/pkg/github.com/therenotomorrow/ex/
     {{ GODOC }} -http=:{{ port }}
@@ -64,14 +67,16 @@ smoke:
 
 [private]
 cover:
-    go test -count 1 -race -coverprofile=coverage.out
+    go test -count 1 -parallel 4 -race -coverprofile=coverage.out
     go tool cover -func coverage.out
 
 # ---- shortcuts
 
 [doc('Run all code quality tools')]
+[group('code')]
 code: align lint
 
 [doc('Run tests by type: `smoke` for quick checks, `cover` for detailed analysis')]
+[group('test')]
 test type='smoke':
     just {{ type }}

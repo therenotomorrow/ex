@@ -1,6 +1,6 @@
 # `ex`
 
-Shows another way for working with the ~~ex~~ ( :dancer: ) errors in Go.
+Shows another way for working with the ~~ex~~ ( :dancer: ) errors in Go. Taste it! :heart:
 
 <div>
   <a href="https://github.com/therenotomorrow/ex/releases" target="_blank">
@@ -58,14 +58,6 @@ func main() {
 }
 ```
 
-## Contributing
-
-Please feel free to submit issues, fork the repository and send pull requests!
-
-## License
-
-This project is licensed under the terms of the MIT license.
-
 ## Development
 
 ### System Requirements
@@ -100,4 +92,20 @@ just code test smoke
 git config --local core.hooksPath .githooks
 ```
 
-Taste it :heart:
+## Testing
+
+```shell
+# run quick checks
+just test smoke # or just test
+
+# run with coverage
+just test cover
+```
+
+## Contributing
+
+Please feel free to submit issues, fork the repository and send pull requests!
+
+## License
+
+This project is licensed under the terms of the MIT license.

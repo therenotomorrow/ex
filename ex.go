@@ -62,7 +62,7 @@
 //		// Error is user not found.
 //		// The cause was a database error.
 //		// Root cause: connection reset by peer
-//		// Full error: user not found
+//		// Full error: user not found (connection reset by peer)
 //	}
 package ex
 
@@ -88,7 +88,7 @@ type (
 	}
 )
 
-// C is an ConstError alias.
+// C is a ConstError alias.
 type C = ConstError
 
 // New creates a new ExtraError from a string.
@@ -203,7 +203,7 @@ func (e *ExtraError) String() string {
 		val["cause"] = e.cause.Error()
 	}
 
-	bytes, _ := json.Marshal(val) //nolint:errchkjson // impossible error because of map
+	bytes, _ := json.Marshal(val) //nolint:errchkjson // impossible error because of `map`
 
 	return string(bytes)
 }
