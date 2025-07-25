@@ -22,6 +22,18 @@ func TestC(t *testing.T) {
 	assert.EqualError(t, constErr, text)
 }
 
+func TestConst(t *testing.T) {
+	t.Parallel()
+
+	const (
+		text     = "const error"
+		constErr = ex.Const(text)
+	)
+
+	assert.IsType(t, constErr, ex.ConstError(""))
+	assert.EqualError(t, constErr, text)
+}
+
 func TestNew(t *testing.T) {
 	t.Parallel()
 
@@ -303,8 +315,8 @@ func TestExtraError(t *testing.T) {
 
 		assert.Empty(t, emptyErr.Error())
 		assert.Equal(t, "base error", onlyErr.Error())
-		assert.Equal(t, "base error (root cause)", xErr.Error())
-		assert.Equal(t, `base error (root error)`, deepCauseErr.Error())
+		assert.Equal(t, "base error: root cause", xErr.Error())
+		assert.Equal(t, `base error: something wrong: root error`, deepCauseErr.Error())
 	})
 
 	t.Run("String", func(t *testing.T) {
@@ -320,7 +332,7 @@ func TestExtraError(t *testing.T) {
 		assert.JSONEq(t, `{}`, emptyErr.String())
 		assert.JSONEq(t, `{"error":"base error"}`, onlyErr.String())
 		assert.JSONEq(t, `{"cause":"root cause","error":"base error"}`, xErr.String())
-		assert.JSONEq(t, `{"cause":"something wrong (root error)","error":"base error"}`, deepCauseErr.String())
+		assert.JSONEq(t, `{"cause":"root error","error":"base error"}`, deepCauseErr.String())
 	})
 
 	t.Run("Unwrap", func(t *testing.T) {

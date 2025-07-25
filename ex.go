@@ -62,14 +62,13 @@
 //		// Error is user not found.
 //		// The cause was a database error.
 //		// Root cause: connection reset by peer
-//		// Full error: user not found (connection reset by peer)
+//		// Full error: user not found: database error: connection reset by peer
 //	}
 package ex
 
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 )
 
 const (
@@ -90,6 +89,9 @@ type (
 
 // C is a ConstError alias.
 type C = ConstError
+
+// Const is a ConstError alias.
+type Const = ConstError //nolint:errname // I think it is usable also
 
 // New creates a new ExtraError from a string.
 func New(text string) *ExtraError {
@@ -183,9 +185,19 @@ func (e *ExtraError) Error() string {
 
 	text := e.err.Error()
 
-	cause := Cause(e.cause)
-	if cause != nil {
-		text += fmt.Sprintf(" (%s)", cause)
+	for cause := e.cause; cause != nil; {
+		var xer *ExtraError
+		if errors.As(cause, &xer) {
+			if xer.err != nil {
+				text += ": " + xer.err.Error()
+			}
+
+			cause = xer.cause
+		} else {
+			text += ": " + cause.Error()
+
+			break
+		}
 	}
 
 	return text
@@ -200,7 +212,7 @@ func (e *ExtraError) String() string {
 	}
 
 	if e.cause != nil {
-		val["cause"] = e.cause.Error()
+		val["cause"] = Cause(e.cause).Error()
 	}
 
 	bytes, _ := json.Marshal(val) //nolint:errchkjson // impossible error because of `map`

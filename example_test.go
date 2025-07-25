@@ -52,7 +52,7 @@ func ExampleUnexpected() {
 		fmt.Println("This was an unexpected error.")
 	}
 	// Output:
-	// unexpected (connection refused)
+	// unexpected: connection refused
 	// connection refused
 	// This was an unexpected error.
 }
@@ -143,7 +143,7 @@ func ExampleCause() {
 	fmt.Printf("Root cause: %s\n", rootCause2)
 	// Output:
 	// root cause: disk is full
-	// Error message: unexpected (disk write error)
+	// Error message: unexpected: permission denied: failed to save user: disk write error
 	// Is critical: true
 	// Is permission error: true
 	// Root cause: disk write error
@@ -159,7 +159,7 @@ func ExampleConstError_Because() {
 	fmt.Println(err)
 	fmt.Println("Cause:", ex.Cause(err))
 	// Output:
-	// payment failed (stripe: invalid API key)
+	// payment failed: stripe: invalid API key
 	// Cause: stripe: invalid API key
 }
 
@@ -172,7 +172,7 @@ func ExampleConstError_Reason() {
 	fmt.Println(err)
 	fmt.Println("Cause:", ex.Cause(err))
 	// Output:
-	// validation failed (email address is missing)
+	// validation failed: email address is missing
 	// Cause: email address is missing
 }
 
@@ -186,7 +186,7 @@ func ExampleExtraError_Because() {
 	fmt.Println(err)
 	fmt.Println("Cause:", ex.Cause(err))
 	// Output:
-	// payment failed (stripe: invalid API key)
+	// payment failed: stripe: invalid API key
 	// Cause: stripe: invalid API key
 }
 
@@ -199,7 +199,7 @@ func ExampleExtraError_Reason() {
 	fmt.Println(err)
 	fmt.Println("Cause:", ex.Cause(err))
 	// Output:
-	// validation failed (email address is missing)
+	// validation failed: email address is missing
 	// Cause: email address is missing
 }
 
