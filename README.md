@@ -40,22 +40,68 @@ package main
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/therenotomorrow/ex"
 )
 
-func main() {
-	// Create a deeply nested error
-	stdErr := errors.New("standard error")
-	constErr := ex.ConstError("ex const error")
+// 1. Define sentinel errors for your application domain.
+// These act as stable identifiers for known error conditions.
+const (
+	ErrConfigValidation ex.Error = "config validation failed"
+	ErrFileAccess       ex.Error = "file access error"
+)
 
-	err := ex.New("xxx error").Because(ex.From(stdErr).Because(constErr.Reason("why not?")))
+// 2. Create a function that simulates a real-world error chain.
+func loadConfig(_ string) error {
+	// Simulate a low-level OS error (the root cause).
+	// For this example, we'll use a standard library error.
+	underlyingErr := os.ErrPermission
 
-	// Extract the original, underlying error
-	cause := ex.Cause(err)
-	fmt.Println(cause)       // why not?
-	fmt.Println(err.Error()) // xxx error: standard error: ex const error: why not?
+	// The file access layer wraps the specific OS error with our domain error.
+	accessErr := ErrFileAccess.Because(underlyingErr)
+
+	// The business logic layer wraps the access error with a higher-level reason.
+	// We also add a specific reason for why the validation failed.
+	businessErr := ErrConfigValidation.Reason("user section is missing")
+
+	// Chain errors or add more specific details in other words.
+	return ex.Cast(businessErr).Because(accessErr)
 }
+
+func main() {
+	// 3. Call the function and get the rich, chained error.
+	err := loadConfig("/etc/app/config.yaml")
+
+	// 4. Print the full error chain for detailed logging. 🪵
+	// The output is a clear, human-readable trace of what happened.
+	fmt.Printf("Full error: %s\n\n", err)
+
+	// 5. Check for specific errors to make programmatic decisions.
+	// This works even though the errors are deeply nested in the chain.
+	fmt.Println("Checking error identities...")
+
+	if errors.Is(err, ErrConfigValidation) {
+		fmt.Println("✅ High-level operation failed: Could not validate config.")
+	}
+
+	if errors.Is(err, ErrFileAccess) {
+		fmt.Println("✅ Intermediate cause: Could not access the file.")
+	}
+
+	// You can even check against standard library errors wrapped in the chain!
+	if errors.Is(err, os.ErrPermission) {
+		fmt.Println("✅ Root cause: Permission was denied by the OS.")
+	}
+}
+
+// Output:
+// Full error: config validation failed: file access error: permission denied
+//
+// Checking error identities...
+// ✅ High-level operation failed: Could not validate config.
+// ✅ Intermediate cause: Could not access the file.
+// ✅ Root cause: Permission was denied by the OS.
 ```
 
 ## Development
