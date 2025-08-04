@@ -8,24 +8,28 @@ import (
 	"github.com/therenotomorrow/ex"
 )
 
-// Demonstrates creating a basic error.
+// Demonstrates creating a new, basic error from a string.
 func ExampleNew() {
 	err := ex.New("repository: user not found")
+
 	fmt.Println(err)
 	// Output:
 	// repository: user not found
 }
 
-// Demonstrates converting a standard error into an ExtraError.
+// Demonstrates how to convert a standard library or third-party error
+// into an XError, allowing it to be part of a chain while preserving its original identity.
 func ExampleCast() {
-	// Simulate an error from an external package
-	originalErr := io.EOF
+	var (
+		// Simulate an error from an external package.
+		originalErr = io.EOF
+		// Cast the standard error to an XError.
+		err = ex.Cast(originalErr)
+	)
 
-	// Wrap it in an ExtraError to add context
-	err := ex.Cast(originalErr)
 	fmt.Println(err)
 
-	// You can still check for the original error type
+	// You can still check for the original error identity using errors.Is.
 	if errors.Is(err, io.EOF) {
 		fmt.Println("Error is io.EOF")
 	}
@@ -34,16 +38,19 @@ func ExampleCast() {
 	// Error is io.EOF
 }
 
-// Demonstrates wrapping an unexpected error with a standard message.
+// Shows how to wrap an error with the standard ErrUnexpected identity.
+// This is useful for flagging errors that likely indicate a bug.
 func ExampleUnexpected() {
-	// An unexpected database error occurs
-	dbErr := errors.New("connection refused")
+	var (
+		// Simulate an unexpected database error.
+		dbErr = errors.New("connection refused")
+		// Wrap it as an unexpected error.
+		err = ex.Unexpected(dbErr)
+	)
 
-	// Wrap it as a critical, unexpected error
-	err := ex.Unexpected(dbErr)
 	fmt.Println(err)
 
-	// The main error message is standardized
+	// You can now check for the generic "unexpected" error type.
 	if errors.Is(err, ex.ErrUnexpected) {
 		fmt.Println("This was an unexpected error.")
 	}
@@ -52,70 +59,73 @@ func ExampleUnexpected() {
 	// This was an unexpected error.
 }
 
-// Demonstrates wrapping a critical error with a standard message.
+// Shows how to wrap an error with the standard ErrCritical identity,
+// signaling a severe, non-recoverable problem.
 func ExampleCritical() {
-	// An unexpected database error occurs
-	dbErr := errors.New("connection refused")
+	var (
+		// Simulate a critical filesystem error.
+		fsErr = errors.New("disk is full")
+		// Wrap it as a critical error.
+		err = ex.Critical(fsErr)
+	)
 
-	// Wrap it as a critical, unexpected error
-	err := ex.Critical(dbErr)
 	fmt.Println(err)
 
-	// The main error message is standardized
+	// Check for the generic "critical" error type.
 	if errors.Is(err, ex.ErrCritical) {
 		fmt.Println("This was a critical error.")
 	}
 	// Output:
-	// critical: connection refused
+	// critical: disk is full
 	// This was a critical error.
 }
 
-// Demonstrates its use in situations where an error is not want.
+// Demonstrates how to assert that a function call must not return an error.
+// If an error is present, Must panics. This is useful for setup code where an
+// error is unrecoverable and should halt execution immediately.
 func ExampleMust() {
-	// This function simulates a call that should not fail
-	mightReturnValue := func() (string, error) {
-		return "critical data", nil
-	}
+	// Case 1: The function succeeds and returns a value.
+	value := ex.Must("critical data", nil)
 
-	// This function simulates a call that will fail
-	mightPanic := func() (string, error) {
-		return "", errors.New("something went wrong")
-	}
-
-	// The successful case:
-	value := ex.Must(mightReturnValue())
 	fmt.Println(value)
 
-	// The panic case:
-	// We use a deferred recover to demonstrate the panic.
+	// Case 2: The function returns an error and Must panics.
+	// We use a deferred recover to gracefully handle the panic for this example.
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered from panic:", r)
 		}
 	}()
 
-	ex.Must(mightPanic())
+	ex.Must("some value", errors.New("something went wrong"))
 	// Output:
 	// critical data
 	// Recovered from panic: something went wrong
 }
 
-// Shows how to add a causal error for ConstError.
+// Shows how to add a causal error to a sentinel Error, creating a chain of errors.
 func ExampleError_Because() {
-	ErrPayment := ex.Error("payment failed")
-	apiErr := errors.New("stripe: invalid API key")
+	// Define a sentinel error for your domain.
+	const ErrPayment ex.Error = "payment failed"
 
-	err := ErrPayment.Because(apiErr)
+	var (
+		// Simulate a low-level API error.
+		apiErr = errors.New("stripe: invalid API key")
+		// Chain the errors together. ErrPayment is the identity, apiErr is the cause.
+		err = ErrPayment.Because(apiErr)
+	)
 
 	fmt.Println(err)
 	// Output:
 	// payment failed: stripe: invalid API key
 }
 
-// Shows how to add a cause with a simple text description for ConstError.
+// Shows how to add a simple text description as the cause for a sentinel Error.
 func ExampleError_Reason() {
-	ErrValidation := ex.Error("validation failed")
+	// Define a sentinel error for your domain.
+	const ErrValidation ex.Error = "validation failed"
 
+	// Add a specific, human-readable reason.
 	err := ErrValidation.Reason("email address is missing")
 
 	fmt.Println(err)

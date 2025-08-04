@@ -9,7 +9,7 @@ default:
 
 # ---- golangci-lint
 
-GOLANGCI_LINT_VERSION := 'v2.2.2'
+GOLANGCI_LINT_VERSION := 'v2.3.1'
 GOLANGCI_LINT_PATH := BIN / 'golangci-lint'
 GOLANGCI_LINT := GOLANGCI_LINT_PATH + '@' + GOLANGCI_LINT_VERSION
 
