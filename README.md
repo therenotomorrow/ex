@@ -110,10 +110,10 @@ func main() {
 
 ```shell
 go version
-# go version go1.21.0
+# go version go1.25.3
 
 just --version
-# just 1.40.0
+# just 1.42.4
 ```
 
 ### Download sources
@@ -128,11 +128,10 @@ cd "$PROJECT_ROOT"
 
 ```shell
 # install dependencies
-go mod download
-go mod verify
+go mod tidy
 
 # check code integrity
-just code test smoke
+just code test
 
 # setup safe development (optional)
 git config --local core.hooksPath .githooks

@@ -10,6 +10,9 @@ const (
 
 	// ErrCritical represents a critical, non-recoverable error.
 	ErrCritical Error = "critical"
+
+	// ErrDummy uses as mock-like error for testing purposes.
+	ErrDummy Error = "dummy"
 )
 
 var (
@@ -74,6 +77,11 @@ func Unexpected(cause error) error {
 // Critical creates a new error with ErrCritical as the root and sets the cause.
 func Critical(cause error) error {
 	return &xError{error: ErrCritical, cause: cause}
+}
+
+// Dummy creates a new error with ErrDummy as the root and sets the cause.
+func Dummy(cause error) error {
+	return &xError{error: ErrDummy, cause: cause}
 }
 
 // Error is a constant string-based error type.

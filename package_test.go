@@ -80,6 +80,27 @@ func ExampleCritical() {
 	// This was a critical error.
 }
 
+// Shows how to wrap an error with the standard ErrDummy identity.
+// This is useful for testing and not meaningful errors.
+func ExampleDummy() {
+	var (
+		// Simulate a dummy eol error.
+		eolErr = errors.New("finite task")
+		// Wrap it as a dummy error.
+		err = ex.Dummy(eolErr)
+	)
+
+	fmt.Println(err)
+
+	// Check for the generic "dummy" error type.
+	if errors.Is(err, ex.ErrDummy) {
+		fmt.Println("This was a dummy error.")
+	}
+	// Output:
+	// dummy: finite task
+	// This was a dummy error.
+}
+
 // Demonstrates how to assert that a function call must not return an error.
 // If an error is present, Must panics. This is useful for setup code where an
 // error is unrecoverable and should halt execution immediately.

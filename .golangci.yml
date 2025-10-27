@@ -55,6 +55,7 @@ formatters:
       sections:
         - standard
         - default
+        - prefix(github.com/therenotomorrow/ex)
     gofmt:
       simplify: true
       rewrite-rules:
@@ -81,6 +82,6 @@ output:
   show-stats: true
 
 run:
-  go: '1.21'
+  go: '1.25'
   allow-parallel-runners: true
   timeout: 5m

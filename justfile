@@ -9,7 +9,7 @@ default:
 
 # ---- golangci-lint
 
-GOLANGCI_LINT_VERSION := 'v2.3.1'
+GOLANGCI_LINT_VERSION := 'v2.5.0'
 GOLANGCI_LINT_PATH := BIN / 'golangci-lint'
 GOLANGCI_LINT := GOLANGCI_LINT_PATH + '@' + GOLANGCI_LINT_VERSION
 
@@ -26,7 +26,7 @@ lint:
 
 # ---- fieldaligment
 
-FIELDALIGNMENT_VERSION := 'v0.35.0'
+FIELDALIGNMENT_VERSION := 'v0.38.0'
 FIELDALIGNMENT_PATH := BIN / 'fieldalignment'
 FIELDALIGNMENT := FIELDALIGNMENT_PATH + '@' + FIELDALIGNMENT_VERSION
 
@@ -43,7 +43,7 @@ align:
 
 # ---- godoc
 
-GODOC_VERSION := 'v0.35.0'
+GODOC_VERSION := 'v0.36.0'
 GODOC_PATH := BIN / 'godoc'
 GODOC := GODOC_PATH + '@' + GODOC_VERSION
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"github.com/therenotomorrow/ex"
 )
 
@@ -149,6 +150,19 @@ func TestCritical(t *testing.T) {
 	)
 
 	require.ErrorIs(t, got, ex.ErrCritical)
+	require.ErrorIs(t, cause, causeErr)
+}
+
+func TestDummy(t *testing.T) {
+	t.Parallel()
+
+	var (
+		causeErr   = errors.New("critical failure")
+		err        = ex.Dummy(causeErr)
+		got, cause = ex.Expose(err)
+	)
+
+	require.ErrorIs(t, got, ex.ErrDummy)
 	require.ErrorIs(t, cause, causeErr)
 }
 
