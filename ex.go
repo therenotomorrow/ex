@@ -30,13 +30,8 @@ type XError interface {
 	Because(cause error) error
 }
 
-// New creates a new error from a text message.
-func New(text string) XError {
-	return &xError{error: Error(text), cause: nil}
-}
-
-// Cast converts a standard error into an XError.
-func Cast(err error) XError {
+// New converts a standard error into an XError.
+func New(err error) XError {
 	if err == nil {
 		return nil
 	}
@@ -57,16 +52,6 @@ func Expose(err error) (error, error) {
 	}
 
 	return xer.error, xer.cause
-}
-
-// Must is a generic helper function that returns the provided value `t` if err is nil.
-// If err is not nil, it panics. This is useful for wrapping calls where an error is not expected.
-func Must[T any](t T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-
-	return t
 }
 
 // Unexpected creates a new error with ErrUnexpected as the root and sets the cause.

@@ -29,7 +29,7 @@
 //
 //	func main() {
 //		// 1. Define sentinel errors for your domain. These are the error "identities".
-//		var (
+//		const (
 //			ErrUserNotFound = ex.Error("user not found")
 //			ErrDatabase     = ex.Error("database error")
 //		)

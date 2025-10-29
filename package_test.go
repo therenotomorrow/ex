@@ -8,23 +8,14 @@ import (
 	"github.com/therenotomorrow/ex"
 )
 
-// Demonstrates creating a new, basic error from a string.
-func ExampleNew() {
-	err := ex.New("repository: user not found")
-
-	fmt.Println(err)
-	// Output:
-	// repository: user not found
-}
-
 // Demonstrates how to convert a standard library or third-party error
 // into an XError, allowing it to be part of a chain while preserving its original identity.
-func ExampleCast() {
+func ExampleNew() {
 	var (
 		// Simulate an error from an external package.
 		originalErr = io.EOF
 		// Cast the standard error to an XError.
-		err = ex.Cast(originalErr)
+		err = ex.New(originalErr)
 	)
 
 	fmt.Println(err)
@@ -99,29 +90,6 @@ func ExampleDummy() {
 	// Output:
 	// dummy: finite task
 	// This was a dummy error.
-}
-
-// Demonstrates how to assert that a function call must not return an error.
-// If an error is present, Must panics. This is useful for setup code where an
-// error is unrecoverable and should halt execution immediately.
-func ExampleMust() {
-	// Case 1: The function succeeds and returns a value.
-	value := ex.Must("critical data", nil)
-
-	fmt.Println(value)
-
-	// Case 2: The function returns an error and Must panics.
-	// We use a deferred recover to gracefully handle the panic for this example.
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Recovered from panic:", r)
-		}
-	}()
-
-	ex.Must("some value", errors.New("something went wrong"))
-	// Output:
-	// critical data
-	// Recovered from panic: something went wrong
 }
 
 // Shows how to add a causal error to a sentinel Error, creating a chain of errors.

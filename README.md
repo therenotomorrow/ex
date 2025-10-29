@@ -6,8 +6,8 @@ Shows another way for working with the ~~ex~~ ( :dancer: ) errors in Go. Taste i
   <a href="https://github.com/therenotomorrow/ex/releases" target="_blank">
     <img src="https://img.shields.io/github/v/release/therenotomorrow/ex?color=FBC02D" alt="GitHub releases">
   </a>
-  <a href="https://go.dev/doc/go1.21" target="_blank">
-    <img src="https://img.shields.io/badge/Go-%3E%3D%201.21-blue.svg" alt="Go 1.21">
+  <a href="https://go.dev/doc/go1.25" target="_blank">
+    <img src="https://img.shields.io/badge/Go-%3E%3D%201.25-blue.svg" alt="Go 1.25">
   </a>
   <a href="https://pkg.go.dev/github.com/therenotomorrow/ex" target="_blank">
     <img src="https://godoc.org/github.com/therenotomorrow/ex?status.svg" alt="Go reference">
@@ -66,7 +66,7 @@ func loadConfig(_ string) error {
 	businessErr := ErrConfigValidation.Reason("user section is missing")
 
 	// Chain errors or add more specific details in other words.
-	return ex.Cast(businessErr).Because(accessErr)
+	return ex.New(businessErr).Because(accessErr)
 }
 
 func main() {
