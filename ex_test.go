@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/therenotomorrow/ex"
@@ -48,9 +47,8 @@ func TestNew(t *testing.T) {
 
 		require.ErrorIs(t, cause, causeErr)
 		require.ErrorIs(t, got, constErr)
-
-		assert.Equal(t, err, packageErr)
-		assert.NotSame(t, packageErr, err)
+		require.Equal(t, err, packageErr)
+		require.NotSame(t, packageErr, err)
 	})
 }
 
@@ -60,7 +58,7 @@ func TestExpose(t *testing.T) {
 	t.Run("no panic", func(t *testing.T) {
 		t.Parallel()
 
-		assert.NotPanics(t, func() {
+		require.NotPanics(t, func() {
 			const (
 				baseErr  = ex.Error("base text")
 				constErr = ex.Error("some error")
@@ -81,7 +79,9 @@ func TestExpose(t *testing.T) {
 
 		const text = "invalid error type"
 
-		assert.PanicsWithValue(t, text, func() { _, _ = ex.Expose(nil) })
+		require.PanicsWithValue(t, text, func() {
+			_, _ = ex.Expose(nil)
+		})
 	})
 }
 
@@ -96,6 +96,8 @@ func TestUnexpected(t *testing.T) {
 
 	require.ErrorIs(t, got, ex.ErrUnexpected)
 	require.ErrorIs(t, cause, causeErr)
+	require.EqualError(t, err, "unexpected: unexpected failure")
+	require.NoError(t, ex.Unexpected(nil))
 }
 
 func TestCritical(t *testing.T) {
@@ -109,19 +111,23 @@ func TestCritical(t *testing.T) {
 
 	require.ErrorIs(t, got, ex.ErrCritical)
 	require.ErrorIs(t, cause, causeErr)
+	require.EqualError(t, err, "critical: critical failure")
+	require.NoError(t, ex.Critical(nil))
 }
 
 func TestDummy(t *testing.T) {
 	t.Parallel()
 
 	var (
-		causeErr   = errors.New("critical failure")
+		causeErr   = errors.New("dummy failure")
 		err        = ex.Dummy(causeErr)
 		got, cause = ex.Expose(err)
 	)
 
 	require.ErrorIs(t, got, ex.ErrDummy)
 	require.ErrorIs(t, cause, causeErr)
+	require.EqualError(t, err, "dummy: dummy failure")
+	require.NoError(t, ex.Dummy(nil))
 }
 
 func TestError(t *testing.T) {
@@ -166,7 +172,7 @@ func TestError(t *testing.T) {
 
 		var err error = ex.Error(text)
 
-		assert.Equal(t, text, err.Error())
+		require.EqualError(t, err, text)
 	})
 }
 
@@ -215,15 +221,15 @@ func TestXError(t *testing.T) {
 			deepCauseErr error = ex.New(xErr.Because(ex.New(ex.Error("something wrong")).Because(rootErr)))
 		)
 
-		assert.Equal(t, "base error", onlyErr.Error())
-		assert.Equal(t, "base error: root cause", xErr.Error())
-		assert.Equal(t, `base error: something wrong: root error`, deepCauseErr.Error())
+		require.EqualError(t, onlyErr, "base error")
+		require.EqualError(t, xErr, "base error: root cause")
+		require.EqualError(t, deepCauseErr, "base error: something wrong: root error")
 	})
 
 	t.Run("Unwrap", func(t *testing.T) {
 		t.Parallel()
 
-		assert.Equal(t, baseErr, errors.Unwrap(xErr))
+		require.Equal(t, baseErr, errors.Unwrap(xErr))
 	})
 
 	t.Run("Is", func(t *testing.T) {
@@ -281,7 +287,7 @@ func TestXError(t *testing.T) {
 
 				got := errors.Is(test.xer, test.args.target)
 
-				assert.Equal(t, test.want, got)
+				require.Equal(t, test.want, got)
 			})
 		}
 	})

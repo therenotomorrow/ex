@@ -55,17 +55,32 @@ func Expose(err error) (error, error) {
 }
 
 // Unexpected creates a new error with ErrUnexpected as the root and sets the cause.
+// In case the cause is nil the result error will be also nil.
 func Unexpected(cause error) error {
+	if cause == nil {
+		return nil
+	}
+
 	return &xError{error: ErrUnexpected, cause: cause}
 }
 
 // Critical creates a new error with ErrCritical as the root and sets the cause.
+// In case the cause is nil the result error will be also nil.
 func Critical(cause error) error {
+	if cause == nil {
+		return nil
+	}
+
 	return &xError{error: ErrCritical, cause: cause}
 }
 
 // Dummy creates a new error with ErrDummy as the root and sets the cause.
+// In case the cause is nil the result error will be also nil.
 func Dummy(cause error) error {
+	if cause == nil {
+		return nil
+	}
+
 	return &xError{error: ErrDummy, cause: cause}
 }
 
