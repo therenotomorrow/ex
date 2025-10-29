@@ -52,6 +52,30 @@ func TestNew(t *testing.T) {
 	})
 }
 
+func TestPanic(t *testing.T) {
+	t.Parallel()
+
+	t.Run("no panic", func(t *testing.T) {
+		t.Parallel()
+
+		require.NotPanics(t, func() {
+			ex.Panic(nil)
+		})
+	})
+
+	t.Run("with panic", func(t *testing.T) {
+		t.Parallel()
+
+		const text = "critical: super fail"
+
+		err := errors.New("super fail")
+
+		require.PanicsWithError(t, text, func() {
+			ex.Panic(err)
+		})
+	})
+}
+
 func TestExpose(t *testing.T) {
 	t.Parallel()
 

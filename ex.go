@@ -54,6 +54,13 @@ func Expose(err error) (error, error) {
 	return xer.error, xer.cause
 }
 
+// Panic panics in cause of error. Useful for handle critical situations as panic.
+func Panic(err error) {
+	if err != nil {
+		panic(Critical(err))
+	}
+}
+
 // Unexpected creates a new error with ErrUnexpected as the root and sets the cause.
 // In case the cause is nil the result error will be also nil.
 func Unexpected(cause error) error {

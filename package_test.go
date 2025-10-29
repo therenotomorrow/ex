@@ -29,6 +29,26 @@ func ExampleNew() {
 	// Error is io.EOF
 }
 
+// Demonstrates how is Panic works.
+// If an error is present, Panic panics with the ErrCritical. This is useful for setup code where an
+// error is unrecoverable and should halt execution immediately.
+func ExamplePanic() {
+	// Case 1: The function succeeds and returns a value.
+	ex.Panic(nil)
+
+	// Case 2: The function returns an error and Panic panics.
+	// We use a deferred recover to gracefully handle the panic for this example.
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered from panic:", r)
+		}
+	}()
+
+	ex.Panic(errors.New("something went wrong"))
+	// Output:
+	// Recovered from panic: critical: something went wrong
+}
+
 // Shows how to wrap an error with the standard ErrUnexpected identity.
 // This is useful for flagging errors that likely indicate a bug.
 func ExampleUnexpected() {
