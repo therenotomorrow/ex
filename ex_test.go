@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/therenotomorrow/ex"
@@ -73,6 +74,75 @@ func TestPanic(t *testing.T) {
 		require.PanicsWithError(t, text, func() {
 			ex.Panic(err)
 		})
+	})
+}
+
+func TestSkip(t *testing.T) {
+	t.Parallel()
+
+	t.Run("no skip", func(t *testing.T) {
+		t.Parallel()
+
+		ex.Skip(nil)
+	})
+
+	t.Run("with skip", func(t *testing.T) {
+		t.Parallel()
+
+		err := errors.New("super fail")
+
+		ex.Skip(err) // nothing happens here - it's just a mark
+	})
+}
+
+func TestWithPanic(t *testing.T) {
+	t.Parallel()
+
+	t.Run("no panic", func(t *testing.T) {
+		t.Parallel()
+
+		require.NotPanics(t, func() {
+			got := ex.WithPanic(42, nil)
+			want := 42
+
+			assert.Equal(t, want, got)
+		})
+	})
+
+	t.Run("with panic", func(t *testing.T) {
+		t.Parallel()
+
+		const text = "critical: super fail"
+
+		err := errors.New("super fail")
+
+		require.PanicsWithError(t, text, func() {
+			_ = ex.WithPanic(42, err)
+		})
+	})
+}
+
+func TestWithSkip(t *testing.T) {
+	t.Parallel()
+
+	t.Run("no skip", func(t *testing.T) {
+		t.Parallel()
+
+		got := ex.WithSkip(42, nil)
+		want := 42
+
+		assert.Equal(t, want, got)
+	})
+
+	t.Run("with skip", func(t *testing.T) {
+		t.Parallel()
+
+		err := errors.New("super fail")
+
+		got := ex.WithSkip(42, err)
+		want := 42
+
+		assert.Equal(t, want, got)
 	})
 }
 

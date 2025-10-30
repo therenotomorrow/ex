@@ -2,6 +2,7 @@ package ex
 
 import (
 	"errors"
+	"strings"
 )
 
 const (
@@ -11,7 +12,7 @@ const (
 	// ErrCritical represents a critical, non-recoverable error.
 	ErrCritical Error = "critical"
 
-	// ErrDummy uses as mock-like error for testing purposes.
+	// ErrDummy is used as a mock-like error for testing purposes.
 	ErrDummy Error = "dummy"
 )
 
@@ -45,6 +46,7 @@ func New(err error) XError {
 }
 
 // Expose unwraps an error to reveal its internal components: the primary error and its cause.
+// Panics with "invalid error type" if the error is not of type *xError.
 func Expose(err error) (error, error) {
 	var xer *xError
 	if !errors.As(err, &xer) {
@@ -54,15 +56,34 @@ func Expose(err error) (error, error) {
 	return xer.error, xer.cause
 }
 
-// Panic panics in cause of error. Useful for handle critical situations as panic.
+// Panic panics if an error is present. Useful for handling critical situations that should halt execution.
 func Panic(err error) {
 	if err != nil {
 		panic(Critical(err))
 	}
 }
 
+// Skip marks the error as ignored or suppressed.
+// Useful for deliberately ignoring errors instead
+// of using default error handling mechanics.
+func Skip(_ error) {}
+
+// WithPanic does the same as Panic but returns the incoming value.
+func WithPanic[T any](t T, err error) T {
+	if err != nil {
+		panic(Critical(err))
+	}
+
+	return t
+}
+
+// WithSkip does the same as Skip but returns the incoming value.
+func WithSkip[T any](t T, _ error) T {
+	return t
+}
+
 // Unexpected creates a new error with ErrUnexpected as the root and sets the cause.
-// In case the cause is nil the result error will be also nil.
+// If the cause is nil, the result error will also be nil.
 func Unexpected(cause error) error {
 	if cause == nil {
 		return nil
@@ -72,7 +93,7 @@ func Unexpected(cause error) error {
 }
 
 // Critical creates a new error with ErrCritical as the root and sets the cause.
-// In case the cause is nil the result error will be also nil.
+// If the cause is nil, the result error will also be nil.
 func Critical(cause error) error {
 	if cause == nil {
 		return nil
@@ -82,7 +103,7 @@ func Critical(cause error) error {
 }
 
 // Dummy creates a new error with ErrDummy as the root and sets the cause.
-// In case the cause is nil the result error will be also nil.
+// If the cause is nil, the result error will also be nil.
 func Dummy(cause error) error {
 	if cause == nil {
 		return nil
@@ -112,8 +133,8 @@ func (c Error) Error() string {
 // xError is an implementation of XError that holds a primary error and a causal error.
 // This structure allows for creating a chain of errors to provide rich context.
 type xError struct {
-	error error // The primary error.
-	cause error // The underlying cause of the primary error.
+	error error // The primary error identity.
+	cause error // The underlying cause of the primary error (can be nil).
 }
 
 // Because creates a new xError, preserving the original primary error but replacing its cause.
@@ -130,24 +151,28 @@ func (e *xError) Reason(text string) error {
 // Error flattens the error chain into a single, colon-separated string.
 // It recursively traverses the cause chain to build the final error message.
 func (e *xError) Error() string {
-	text := e.error.Error()
+	var builder strings.Builder
+
+	builder.WriteString(e.error.Error())
 
 	for cause := e.cause; cause != nil; {
 		var xer *xError
 		if errors.As(cause, &xer) {
 			if xer.error != nil {
-				text += ": " + xer.error.Error()
+				builder.WriteString(": ")
+				builder.WriteString(xer.error.Error())
 			}
 
 			cause = xer.cause
 		} else {
-			text += ": " + cause.Error()
+			builder.WriteString(": ")
+			builder.WriteString(cause.Error())
 
 			break
 		}
 	}
 
-	return text
+	return builder.String()
 }
 
 // Unwrap returns the primary error, allowing compatibility with `errors.As`.
