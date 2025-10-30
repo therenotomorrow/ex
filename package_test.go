@@ -29,6 +29,33 @@ func ExampleNew() {
 	// Error is io.EOF
 }
 
+// Demonstrates how to use Expose to inspect error components.
+// This is useful for logging, debugging, or custom error handling logic.
+func ExampleExpose() {
+	const ErrDatabase ex.Error = "database error"
+
+	var (
+		rootCause = errors.New("connection timeout")
+		err       = ErrDatabase.Because(rootCause)
+	)
+
+	// Expose the error to get its components
+	primary, cause := ex.Expose(err)
+
+	fmt.Printf("Primary: %v\n", primary)
+	fmt.Printf("Cause: %v\n", cause)
+
+	// Expose works with the standard error as proxy (error, nil)
+	primary, cause = ex.Expose(rootCause)
+	fmt.Printf("Primary: %v\n", primary)
+	fmt.Printf("Cause: %v\n", cause)
+	// Output:
+	// Primary: database error
+	// Cause: connection timeout
+	// Primary: connection timeout
+	// Cause: <nil>
+}
+
 // Demonstrates how Panic is works.
 // If an error is present, Panic panics with the ErrCritical. This is useful for setup code where an
 // error is unrecoverable and should halt execution immediately.

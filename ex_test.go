@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/therenotomorrow/ex"
@@ -50,6 +49,42 @@ func TestNew(t *testing.T) {
 		require.ErrorIs(t, got, constErr)
 		require.Equal(t, err, packageErr)
 		require.NotSame(t, packageErr, err)
+	})
+
+	t.Run("nil cause", func(t *testing.T) {
+		t.Parallel()
+
+		const baseErr = ex.Error("base error")
+
+		var (
+			xErr       = ex.New(baseErr)
+			wrapped    = ex.New(xErr)
+			got, cause = ex.Expose(wrapped)
+		)
+
+		require.NotNil(t, xErr)
+		require.NotNil(t, wrapped)
+		require.ErrorIs(t, got, baseErr)
+		require.NoError(t, cause)
+	})
+
+	t.Run("wrapped xerror", func(t *testing.T) {
+		t.Parallel()
+
+		const (
+			baseErr  = ex.Error("base")
+			causeErr = ex.Error("cause")
+		)
+
+		var (
+			original   = ex.New(baseErr).Because(causeErr)
+			wrapped    = ex.New(original)
+			got, cause = ex.Expose(wrapped)
+		)
+
+		require.NotSame(t, original, wrapped)
+		require.ErrorIs(t, got, baseErr)
+		require.ErrorIs(t, cause, causeErr)
 	})
 }
 
@@ -105,7 +140,7 @@ func TestWithPanic(t *testing.T) {
 			got := ex.WithPanic(42, nil)
 			want := 42
 
-			assert.Equal(t, want, got)
+			require.Equal(t, want, got)
 		})
 	})
 
@@ -131,7 +166,7 @@ func TestWithSkip(t *testing.T) {
 		got := ex.WithSkip(42, nil)
 		want := 42
 
-		assert.Equal(t, want, got)
+		require.Equal(t, want, got)
 	})
 
 	t.Run("with skip", func(t *testing.T) {
@@ -142,40 +177,49 @@ func TestWithSkip(t *testing.T) {
 		got := ex.WithSkip(42, err)
 		want := 42
 
-		assert.Equal(t, want, got)
+		require.Equal(t, want, got)
 	})
 }
 
 func TestExpose(t *testing.T) {
 	t.Parallel()
 
-	t.Run("no panic", func(t *testing.T) {
+	t.Run("xerror passed", func(t *testing.T) {
 		t.Parallel()
 
-		require.NotPanics(t, func() {
-			const (
-				baseErr  = ex.Error("base text")
-				constErr = ex.Error("some error")
-			)
+		const (
+			baseErr  = ex.Error("base text")
+			constErr = ex.Error("some error")
+		)
 
-			var (
-				err        = ex.New(baseErr).Because(constErr)
-				got, cause = ex.Expose(err)
-			)
+		var (
+			err        = ex.New(baseErr).Because(constErr)
+			got, cause = ex.Expose(err)
+		)
 
-			require.ErrorIs(t, got, baseErr)
-			require.ErrorIs(t, cause, constErr)
-		})
+		require.ErrorIs(t, got, baseErr)
+		require.ErrorIs(t, cause, constErr)
 	})
 
-	t.Run("with panic", func(t *testing.T) {
+	t.Run("nothing passed", func(t *testing.T) {
 		t.Parallel()
 
-		const text = "invalid error type"
+		got, cause := ex.Expose(nil)
 
-		require.PanicsWithValue(t, text, func() {
-			_, _ = ex.Expose(nil)
-		})
+		require.NoError(t, got)
+		require.NoError(t, cause)
+	})
+
+	t.Run("standard passed", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			err        = errors.New("not an ex")
+			got, cause = ex.Expose(err)
+		)
+
+		require.ErrorIs(t, got, err)
+		require.NoError(t, cause)
 	})
 }
 
@@ -385,4 +429,70 @@ func TestXError(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestDeepErrorChain(t *testing.T) {
+	t.Parallel()
+
+	const (
+		depth   = 15
+		rootErr = ex.Error("root")
+	)
+
+	var err error = ex.Error("root")
+	// build a deep chain of errors
+	for i := 1; i <= depth; i++ {
+		level := "level " + string(rune('a'+i))
+		err = ex.New(ex.Error(level)).Because(err)
+	}
+
+	require.EqualError(t, err, ""+
+		"level p: "+
+		"level o: "+
+		"level n: "+
+		"level m: "+
+		"level l: "+
+		"level k: "+
+		"level j: "+
+		"level i: "+
+		"level h: "+
+		"level g: "+
+		"level f: "+
+		"level e: "+
+		"level d: "+
+		"level c: "+
+		"level b: "+
+		"root")
+
+	require.ErrorIs(t, err, rootErr)
+
+	unwrapped := errors.Unwrap(err)
+
+	require.Error(t, unwrapped)
+	require.NotEqual(t, err, unwrapped)
+}
+
+func TestErrorChainWithMixedTypes(t *testing.T) {
+	t.Parallel()
+
+	var (
+		stdErr1 = errors.New("standard error 1")
+		exErr1  = ex.Error("ex error 1")
+		stdErr2 = errors.New("standard error 2")
+		exErr2  = ex.Error("ex error 2")
+	)
+
+	err := ex.New(exErr2).Because(
+		ex.New(stdErr2).Because(
+			ex.New(exErr1).Because(stdErr1),
+		),
+	)
+
+	// finds all errors in the chain
+	require.ErrorIs(t, err, exErr2)
+	require.ErrorIs(t, err, stdErr2)
+	require.ErrorIs(t, err, exErr1)
+	require.ErrorIs(t, err, stdErr1)
+
+	require.EqualError(t, err, "ex error 2: standard error 2: ex error 1: standard error 1")
 }
