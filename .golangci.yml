@@ -17,7 +17,7 @@ linters:
             - '$all'
             - '!$test'
           allow:
-            - 'errors'
+            - '$gostd'
         tests:
           list-mode: strict
           files:

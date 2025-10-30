@@ -13,6 +13,12 @@
 // preserving the full, detailed context of the original problem, making debugging
 // and logging much more effective.
 //
+// Best practices:
+// - Define sentinel errors as package-level constants
+// - Keep error chains shallow when possible (2-3 levels)
+// - Use Error.Reason for simple text descriptions
+// - Use Error.Because when wrapping existing errors
+//
 // # Example
 //
 // This example demonstrates how to define domain-specific errors and wrap them

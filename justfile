@@ -24,14 +24,14 @@ lint:
     @if test ! -e {{ GOLANGCI_LINT }}; then just install-golangci-lint; fi
     {{ GOLANGCI_LINT }} run ./...
 
-# ---- fieldaligment
+# ---- fieldalignment
 
 FIELDALIGNMENT_VERSION := 'v0.38.0'
 FIELDALIGNMENT_PATH := BIN / 'fieldalignment'
 FIELDALIGNMENT := FIELDALIGNMENT_PATH + '@' + FIELDALIGNMENT_VERSION
 
 [private]
-install-fieldaligment:
+install-fieldalignment:
     GOBIN={{ BIN }} go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@{{ FIELDALIGNMENT_VERSION }}
     mv {{ FIELDALIGNMENT_PATH }} {{ FIELDALIGNMENT }}
 
