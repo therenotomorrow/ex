@@ -224,7 +224,10 @@ func TestCritical(t *testing.T) {
 		t.Parallel()
 
 		require.NotPanics(t, func() {
-			require.NoError(t, ex.Critical(nil))
+			got := ex.Critical(42, nil)
+			want := 42
+
+			require.Equal(t, want, got)
 		})
 	})
 
@@ -236,7 +239,7 @@ func TestCritical(t *testing.T) {
 		causeErr := errors.New("critical failure")
 
 		require.PanicsWithError(t, text, func() {
-			_ = ex.Critical(causeErr)
+			_ = ex.Critical(0, causeErr)
 		})
 	})
 }

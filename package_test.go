@@ -149,12 +149,15 @@ func ExampleUnknown() {
 // Shows how to wrap an error with the standard ErrCritical identity,
 // signaling a severe, non-recoverable problem. And yes - it panics.
 func ExampleCritical() {
-	// Case 1: No error, so nothing happens (returns nil, no panic).
-	_ = ex.Critical(nil)
+	// Case 1: No error, so nothing happens (returns result, no panic).
+	res := ex.Critical("we got result", nil)
+	fmt.Println(res)
 
 	// Simulate a critical filesystem error.
 	fsErr := errors.New("disk is full")
 
+	// Case 2: An error is passed and Critical panics.
+	// We use a deferred recover to gracefully handle the panic for this example.
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered from panic:", r)
@@ -162,8 +165,9 @@ func ExampleCritical() {
 	}()
 
 	// Wrap it as a critical error and it will panic.
-	_ = ex.Critical(fsErr)
+	_ = ex.Critical("omg", fsErr)
 	// Output:
+	// we got result
 	// Recovered from panic: critical: disk is full
 }
 

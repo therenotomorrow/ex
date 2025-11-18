@@ -67,7 +67,7 @@ func Expose(err error) (error, error) {
 
 // Panic panics if an error is present. Useful for handling critical situations that should halt execution.
 func Panic(err error) {
-	_ = Critical(err)
+	_ = Critical(0, err)
 }
 
 // Skip marks the error as ignored or suppressed.
@@ -97,9 +97,9 @@ func Unknown(cause error) error {
 
 // Critical panics with a new error with ErrCritical as the root and sets the cause.
 // If the cause is nil, the result error will also be nil.
-func Critical(cause error) error {
+func Critical[T any](t T, cause error) T {
 	if cause == nil {
-		return nil
+		return t
 	}
 
 	panic(&xError{error: ErrCritical, cause: cause})
