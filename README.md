@@ -65,7 +65,7 @@ func loadConfig(_ string) error {
 	businessErr := ErrConfigValidation.Reason("user section is missing")
 
 	// Chain multiple errors: businessErr wraps accessErr
-	return ex.New(businessErr).Because(accessErr)
+	return ex.Convert(businessErr).Because(accessErr)
 }
 
 func main() {

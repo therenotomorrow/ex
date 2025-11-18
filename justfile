@@ -67,7 +67,7 @@ smoke:
 
 [private]
 cover:
-    go test -count 1 -parallel 4 -race -coverprofile=coverage.out
+    go test -count 1 -parallel 8 -race -coverprofile=coverage.out
     go tool cover -func coverage.out
 
 # ---- shortcuts

@@ -12,8 +12,8 @@ const (
 	// ErrCritical represents a critical, non-recoverable error.
 	ErrCritical Error = "critical"
 
-	// ErrDummy is used as a mock-like error for testing purposes.
-	ErrDummy Error = "dummy"
+	// ErrUnknown represents an unknown, non-registered error.
+	ErrUnknown Error = "unknown"
 )
 
 var (
@@ -31,8 +31,8 @@ type XError interface {
 	Because(cause error) error
 }
 
-// New converts a standard error into an XError.
-func New(err error) XError {
+// Convert converts a standard error into an XError.
+func Convert(err error) XError {
 	if err == nil {
 		return nil
 	}
@@ -43,6 +43,15 @@ func New(err error) XError {
 	}
 
 	return &xError{error: err, cause: nil}
+}
+
+// New creates a new XError from the input text.
+func New(text string) XError {
+	if text == "" {
+		return nil
+	}
+
+	return &xError{error: Error(text), cause: nil}
 }
 
 // Expose unwraps an error to reveal its internal components: the primary error and its cause.
@@ -58,29 +67,13 @@ func Expose(err error) (error, error) {
 
 // Panic panics if an error is present. Useful for handling critical situations that should halt execution.
 func Panic(err error) {
-	if err != nil {
-		panic(Critical(err))
-	}
+	_ = Critical(err)
 }
 
 // Skip marks the error as ignored or suppressed.
 // Useful for deliberately ignoring errors instead
 // of using default error handling mechanics.
 func Skip(_ error) {}
-
-// WithPanic does the same as Panic but returns the incoming value.
-func WithPanic[T any](t T, err error) T {
-	if err != nil {
-		panic(Critical(err))
-	}
-
-	return t
-}
-
-// WithSkip does the same as Skip but returns the incoming value.
-func WithSkip[T any](t T, _ error) T {
-	return t
-}
 
 // Unexpected creates a new error with ErrUnexpected as the root and sets the cause.
 // If the cause is nil, the result error will also be nil.
@@ -92,24 +85,24 @@ func Unexpected(cause error) error {
 	return &xError{error: ErrUnexpected, cause: cause}
 }
 
-// Critical creates a new error with ErrCritical as the root and sets the cause.
+// Unknown creates a new error with ErrUnknown as the root and sets the cause.
+// If the cause is nil, the result error will also be nil.
+func Unknown(cause error) error {
+	if cause == nil {
+		return nil
+	}
+
+	return &xError{error: ErrUnknown, cause: cause}
+}
+
+// Critical panics with a new error with ErrCritical as the root and sets the cause.
 // If the cause is nil, the result error will also be nil.
 func Critical(cause error) error {
 	if cause == nil {
 		return nil
 	}
 
-	return &xError{error: ErrCritical, cause: cause}
-}
-
-// Dummy creates a new error with ErrDummy as the root and sets the cause.
-// If the cause is nil, the result error will also be nil.
-func Dummy(cause error) error {
-	if cause == nil {
-		return nil
-	}
-
-	return &xError{error: ErrDummy, cause: cause}
+	panic(&xError{error: ErrCritical, cause: cause})
 }
 
 // Error is a constant string-based error type.

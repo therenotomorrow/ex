@@ -9,13 +9,13 @@ import (
 	"github.com/therenotomorrow/ex"
 )
 
-func TestNew(t *testing.T) {
+func TestConvert(t *testing.T) {
 	t.Parallel()
 
 	t.Run("nillable error", func(t *testing.T) {
 		t.Parallel()
 
-		err := ex.New(nil)
+		err := ex.Convert(nil)
 
 		require.NoError(t, err)
 	})
@@ -25,7 +25,7 @@ func TestNew(t *testing.T) {
 
 		var (
 			stdErr     = errors.New("standard error")
-			err        = ex.New(stdErr)
+			err        = ex.Convert(stdErr)
 			got, cause = ex.Expose(err)
 		)
 
@@ -41,7 +41,7 @@ func TestNew(t *testing.T) {
 		var (
 			causeErr   = errors.New("original cause")
 			packageErr = constErr.Because(causeErr)
-			err        = ex.New(packageErr)
+			err        = ex.Convert(packageErr)
 			got, cause = ex.Expose(err)
 		)
 
@@ -57,8 +57,8 @@ func TestNew(t *testing.T) {
 		const baseErr = ex.Error("base error")
 
 		var (
-			xErr       = ex.New(baseErr)
-			wrapped    = ex.New(xErr)
+			xErr       = ex.Convert(baseErr)
+			wrapped    = ex.Convert(xErr)
 			got, cause = ex.Expose(wrapped)
 		)
 
@@ -77,14 +77,44 @@ func TestNew(t *testing.T) {
 		)
 
 		var (
-			original   = ex.New(baseErr).Because(causeErr)
-			wrapped    = ex.New(original)
+			original   = ex.Convert(baseErr).Because(causeErr)
+			wrapped    = ex.Convert(original)
 			got, cause = ex.Expose(wrapped)
 		)
 
 		require.NotSame(t, original, wrapped)
 		require.ErrorIs(t, got, baseErr)
 		require.ErrorIs(t, cause, causeErr)
+	})
+}
+
+func TestNew(t *testing.T) {
+	t.Parallel()
+
+	t.Run("empty error", func(t *testing.T) {
+		t.Parallel()
+
+		var (
+			err        = ex.New("")
+			got, cause = ex.Expose(err)
+		)
+
+		require.NoError(t, got)
+		require.NoError(t, cause)
+	})
+
+	t.Run("usual error", func(t *testing.T) {
+		t.Parallel()
+
+		const constErr = "something went wrong"
+
+		var (
+			err        = ex.New(constErr)
+			got, cause = ex.Expose(err)
+		)
+
+		require.NoError(t, cause)
+		require.ErrorIs(t, got, ex.Error(constErr))
 	})
 }
 
@@ -130,57 +160,6 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func TestWithPanic(t *testing.T) {
-	t.Parallel()
-
-	t.Run("no panic", func(t *testing.T) {
-		t.Parallel()
-
-		require.NotPanics(t, func() {
-			got := ex.WithPanic(42, nil)
-			want := 42
-
-			require.Equal(t, want, got)
-		})
-	})
-
-	t.Run("with panic", func(t *testing.T) {
-		t.Parallel()
-
-		const text = "critical: super fail"
-
-		err := errors.New("super fail")
-
-		require.PanicsWithError(t, text, func() {
-			_ = ex.WithPanic(42, err)
-		})
-	})
-}
-
-func TestWithSkip(t *testing.T) {
-	t.Parallel()
-
-	t.Run("no skip", func(t *testing.T) {
-		t.Parallel()
-
-		got := ex.WithSkip(42, nil)
-		want := 42
-
-		require.Equal(t, want, got)
-	})
-
-	t.Run("with skip", func(t *testing.T) {
-		t.Parallel()
-
-		err := errors.New("super fail")
-
-		got := ex.WithSkip(42, err)
-		want := 42
-
-		require.Equal(t, want, got)
-	})
-}
-
 func TestExpose(t *testing.T) {
 	t.Parallel()
 
@@ -193,7 +172,7 @@ func TestExpose(t *testing.T) {
 		)
 
 		var (
-			err        = ex.New(baseErr).Because(constErr)
+			err        = ex.Convert(baseErr).Because(constErr)
 			got, cause = ex.Expose(err)
 		)
 
@@ -241,31 +220,40 @@ func TestUnexpected(t *testing.T) {
 func TestCritical(t *testing.T) {
 	t.Parallel()
 
-	var (
-		causeErr   = errors.New("critical failure")
-		err        = ex.Critical(causeErr)
-		got, cause = ex.Expose(err)
-	)
+	t.Run("no panic", func(t *testing.T) {
+		t.Parallel()
 
-	require.ErrorIs(t, got, ex.ErrCritical)
-	require.ErrorIs(t, cause, causeErr)
-	require.EqualError(t, err, "critical: critical failure")
-	require.NoError(t, ex.Critical(nil))
+		require.NotPanics(t, func() {
+			require.NoError(t, ex.Critical(nil))
+		})
+	})
+
+	t.Run("with panic", func(t *testing.T) {
+		t.Parallel()
+
+		const text = "critical: critical failure"
+
+		causeErr := errors.New("critical failure")
+
+		require.PanicsWithError(t, text, func() {
+			_ = ex.Critical(causeErr)
+		})
+	})
 }
 
-func TestDummy(t *testing.T) {
+func TestUnknown(t *testing.T) {
 	t.Parallel()
 
 	var (
-		causeErr   = errors.New("dummy failure")
-		err        = ex.Dummy(causeErr)
+		causeErr   = errors.New("unknown failure")
+		err        = ex.Unknown(causeErr)
 		got, cause = ex.Expose(err)
 	)
 
-	require.ErrorIs(t, got, ex.ErrDummy)
+	require.ErrorIs(t, got, ex.ErrUnknown)
 	require.ErrorIs(t, cause, causeErr)
-	require.EqualError(t, err, "dummy: dummy failure")
-	require.NoError(t, ex.Dummy(nil))
+	require.EqualError(t, err, "unknown: unknown failure")
+	require.NoError(t, ex.Unknown(nil))
 }
 
 func TestError(t *testing.T) {
@@ -321,7 +309,7 @@ func TestXError(t *testing.T) {
 
 	var (
 		causeErr = errors.New("root cause")
-		xErr     = ex.New(ex.New(baseErr).Because(causeErr))
+		xErr     = ex.Convert(ex.Convert(baseErr).Because(causeErr))
 	)
 
 	t.Run("Because", func(t *testing.T) {
@@ -354,9 +342,9 @@ func TestXError(t *testing.T) {
 		t.Parallel()
 
 		var (
-			onlyErr      error = ex.New(baseErr)
+			onlyErr      error = ex.Convert(baseErr)
 			rootErr      error = ex.Error("root error")
-			deepCauseErr error = ex.New(xErr.Because(ex.New(ex.Error("something wrong")).Because(rootErr)))
+			deepCauseErr error = ex.Convert(xErr.Because(ex.Convert(ex.Error("something wrong")).Because(rootErr)))
 		)
 
 		require.EqualError(t, onlyErr, "base error")
@@ -387,31 +375,31 @@ func TestXError(t *testing.T) {
 		}{
 			{
 				name: "target is the wrapped error",
-				xer:  ex.New(baseErr.Because(causeErr)),
+				xer:  ex.Convert(baseErr.Because(causeErr)),
 				args: args{target: baseErr},
 				want: true,
 			},
 			{
 				name: "target is the cause",
-				xer:  ex.New(baseErr.Because(causeErr)),
+				xer:  ex.Convert(baseErr.Because(causeErr)),
 				args: args{target: causeErr},
 				want: true,
 			},
 			{
 				name: "target is a different error",
-				xer:  ex.New(baseErr.Because(causeErr)),
+				xer:  ex.Convert(baseErr.Because(causeErr)),
 				args: args{target: errAnother},
 				want: false,
 			},
 			{
 				name: "no cause, target matches wrapped error",
-				xer:  ex.New(baseErr),
+				xer:  ex.Convert(baseErr),
 				args: args{target: baseErr},
 				want: true,
 			},
 			{
 				name: "no cause, target does not match",
-				xer:  ex.New(baseErr),
+				xer:  ex.Convert(baseErr),
 				args: args{target: errAnother},
 				want: false,
 			},
@@ -443,7 +431,7 @@ func TestDeepErrorChain(t *testing.T) {
 	// build a deep chain of errors
 	for i := 1; i <= depth; i++ {
 		level := "level " + string(rune('a'+i))
-		err = ex.New(ex.Error(level)).Because(err)
+		err = ex.Convert(ex.Error(level)).Because(err)
 	}
 
 	require.EqualError(t, err, ""+
@@ -482,9 +470,9 @@ func TestErrorChainWithMixedTypes(t *testing.T) {
 		exErr2  = ex.Error("ex error 2")
 	)
 
-	err := ex.New(exErr2).Because(
-		ex.New(stdErr2).Because(
-			ex.New(exErr1).Because(stdErr1),
+	err := ex.Convert(exErr2).Because(
+		ex.Convert(stdErr2).Because(
+			ex.Convert(exErr1).Because(stdErr1),
 		),
 	)
 
