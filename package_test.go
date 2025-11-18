@@ -30,7 +30,7 @@ func ExampleConvert() {
 	var (
 		// Simulate an error from an external package.
 		originalErr = io.EOF
-		// Cast the standard error to an XError.
+		// Convert the standard error to an XError.
 		err = ex.Convert(originalErr)
 	)
 
@@ -72,14 +72,14 @@ func ExampleExpose() {
 	// Cause: <nil>
 }
 
-// Demonstrates how Panic is works.
+// Demonstrates how Panic works.
 // If an error is present, Panic panics with the ErrCritical. This is useful for setup code where an
 // error is unrecoverable and should halt execution immediately.
 func ExamplePanic() {
-	// Case 1: The function succeeds and returns a value.
+	// Case 1: No error, so nothing happens.
 	ex.Panic(nil)
 
-	// Case 2: The function returns an error and Panic panics.
+	// Case 2: An error is passed and Panic panics.
 	// We use a deferred recover to gracefully handle the panic for this example.
 	defer func() {
 		if r := recover(); r != nil {
@@ -92,7 +92,7 @@ func ExamplePanic() {
 	// Recovered from panic: critical: something went wrong
 }
 
-// Demonstrates how Skip is works.
+// Demonstrates how Skip works.
 // If an error is present, Skip ignores it and marks for code readers that this is skipped.
 func ExampleSkip() {
 	// Case 1: All fine with nil.
@@ -126,12 +126,12 @@ func ExampleUnexpected() {
 }
 
 // Shows how to wrap an error with the standard ErrUnknown identity.
-// This is useful for flagging errors that likely unknown, unregistered, wtf issues.
+// This is useful for flagging errors that are likely unknown, unregistered, or unexpected issues.
 func ExampleUnknown() {
 	var (
-		// Simulate an unexpected database error.
+		// Simulate an unknown error.
 		wowErr = errors.New("wow we have an error")
-		// Wrap it as an unexpected error.
+		// Wrap it as an unknown error.
 		err = ex.Unknown(wowErr)
 	)
 
@@ -147,9 +147,9 @@ func ExampleUnknown() {
 }
 
 // Shows how to wrap an error with the standard ErrCritical identity,
-// signaling a severe, non-recoverable problem. And yes - it is panics.
+// signaling a severe, non-recoverable problem. And yes - it panics.
 func ExampleCritical() {
-	// Case 1: The function succeeds and returns nothing.
+	// Case 1: No error, so nothing happens (returns nil, no panic).
 	_ = ex.Critical(nil)
 
 	// Simulate a critical filesystem error.
@@ -161,7 +161,7 @@ func ExampleCritical() {
 		}
 	}()
 
-	// Wrap it as a critical error it will panic.
+	// Wrap it as a critical error and it will panic.
 	_ = ex.Critical(fsErr)
 	// Output:
 	// Recovered from panic: critical: disk is full

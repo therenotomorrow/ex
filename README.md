@@ -64,7 +64,7 @@ func loadConfig(_ string) error {
 	// The business logic layer wraps the access error with a higher-level reason.
 	businessErr := ErrConfigValidation.Reason("user section is missing")
 
-	// Chain multiple errors: businessErr wraps accessErr
+	// Chain multiple errors: set accessErr as the cause of businessErr
 	return ex.Convert(businessErr).Because(accessErr)
 }
 
