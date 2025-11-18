@@ -26,12 +26,12 @@ func ExampleNew() {
 
 // Demonstrates how to convert a standard library or third-party error
 // into an XError, allowing it to be part of a chain while preserving its original identity.
-func ExampleConvert() {
+func ExampleConv() {
 	var (
 		// Simulate an error from an external package.
 		originalErr = io.EOF
-		// Convert the standard error to an XError.
-		err = ex.Convert(originalErr)
+		// Conv the standard error to an XError.
+		err = ex.Conv(originalErr)
 	)
 
 	fmt.Println(err)

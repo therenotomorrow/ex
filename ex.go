@@ -31,8 +31,8 @@ type XError interface {
 	Because(cause error) error
 }
 
-// Convert converts a standard error into an XError.
-func Convert(err error) XError {
+// Conv converts a standard error into an XError.
+func Conv(err error) XError {
 	if err == nil {
 		return nil
 	}

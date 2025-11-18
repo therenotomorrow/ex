@@ -9,13 +9,13 @@ import (
 	"github.com/therenotomorrow/ex"
 )
 
-func TestConvert(t *testing.T) {
+func TestConv(t *testing.T) {
 	t.Parallel()
 
 	t.Run("nillable error", func(t *testing.T) {
 		t.Parallel()
 
-		err := ex.Convert(nil)
+		err := ex.Conv(nil)
 
 		require.NoError(t, err)
 	})
@@ -25,7 +25,7 @@ func TestConvert(t *testing.T) {
 
 		var (
 			stdErr     = errors.New("standard error")
-			err        = ex.Convert(stdErr)
+			err        = ex.Conv(stdErr)
 			got, cause = ex.Expose(err)
 		)
 
@@ -41,7 +41,7 @@ func TestConvert(t *testing.T) {
 		var (
 			causeErr   = errors.New("original cause")
 			packageErr = constErr.Because(causeErr)
-			err        = ex.Convert(packageErr)
+			err        = ex.Conv(packageErr)
 			got, cause = ex.Expose(err)
 		)
 
@@ -57,8 +57,8 @@ func TestConvert(t *testing.T) {
 		const baseErr = ex.Error("base error")
 
 		var (
-			xErr       = ex.Convert(baseErr)
-			wrapped    = ex.Convert(xErr)
+			xErr       = ex.Conv(baseErr)
+			wrapped    = ex.Conv(xErr)
 			got, cause = ex.Expose(wrapped)
 		)
 
@@ -77,8 +77,8 @@ func TestConvert(t *testing.T) {
 		)
 
 		var (
-			original   = ex.Convert(baseErr).Because(causeErr)
-			wrapped    = ex.Convert(original)
+			original   = ex.Conv(baseErr).Because(causeErr)
+			wrapped    = ex.Conv(original)
 			got, cause = ex.Expose(wrapped)
 		)
 
@@ -172,7 +172,7 @@ func TestExpose(t *testing.T) {
 		)
 
 		var (
-			err        = ex.Convert(baseErr).Because(constErr)
+			err        = ex.Conv(baseErr).Because(constErr)
 			got, cause = ex.Expose(err)
 		)
 
@@ -309,7 +309,7 @@ func TestXError(t *testing.T) {
 
 	var (
 		causeErr = errors.New("root cause")
-		xErr     = ex.Convert(ex.Convert(baseErr).Because(causeErr))
+		xErr     = ex.Conv(ex.Conv(baseErr).Because(causeErr))
 	)
 
 	t.Run("Because", func(t *testing.T) {
@@ -342,9 +342,9 @@ func TestXError(t *testing.T) {
 		t.Parallel()
 
 		var (
-			onlyErr      error = ex.Convert(baseErr)
+			onlyErr      error = ex.Conv(baseErr)
 			rootErr      error = ex.Error("root error")
-			deepCauseErr error = ex.Convert(xErr.Because(ex.Convert(ex.Error("something wrong")).Because(rootErr)))
+			deepCauseErr error = ex.Conv(xErr.Because(ex.Conv(ex.Error("something wrong")).Because(rootErr)))
 		)
 
 		require.EqualError(t, onlyErr, "base error")
@@ -375,31 +375,31 @@ func TestXError(t *testing.T) {
 		}{
 			{
 				name: "target is the wrapped error",
-				xer:  ex.Convert(baseErr.Because(causeErr)),
+				xer:  ex.Conv(baseErr.Because(causeErr)),
 				args: args{target: baseErr},
 				want: true,
 			},
 			{
 				name: "target is the cause",
-				xer:  ex.Convert(baseErr.Because(causeErr)),
+				xer:  ex.Conv(baseErr.Because(causeErr)),
 				args: args{target: causeErr},
 				want: true,
 			},
 			{
 				name: "target is a different error",
-				xer:  ex.Convert(baseErr.Because(causeErr)),
+				xer:  ex.Conv(baseErr.Because(causeErr)),
 				args: args{target: errAnother},
 				want: false,
 			},
 			{
 				name: "no cause, target matches wrapped error",
-				xer:  ex.Convert(baseErr),
+				xer:  ex.Conv(baseErr),
 				args: args{target: baseErr},
 				want: true,
 			},
 			{
 				name: "no cause, target does not match",
-				xer:  ex.Convert(baseErr),
+				xer:  ex.Conv(baseErr),
 				args: args{target: errAnother},
 				want: false,
 			},
@@ -429,7 +429,7 @@ func TestDeepErrorChain(t *testing.T) {
 	// build a deep chain of errors
 	for i := 1; i <= depth; i++ {
 		level := "level " + string(rune('a'+i))
-		err = ex.Convert(ex.Error(level)).Because(err)
+		err = ex.Conv(ex.Error(level)).Because(err)
 	}
 
 	require.EqualError(t, err, ""+
@@ -468,9 +468,9 @@ func TestErrorChainWithMixedTypes(t *testing.T) {
 		exErr2  = ex.Error("ex error 2")
 	)
 
-	err := ex.Convert(exErr2).Because(
-		ex.Convert(stdErr2).Because(
-			ex.Convert(exErr1).Because(stdErr1),
+	err := ex.Conv(exErr2).Because(
+		ex.Conv(stdErr2).Because(
+			ex.Conv(exErr1).Because(stdErr1),
 		),
 	)
 
