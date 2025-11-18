@@ -9,7 +9,7 @@ default:
 
 # ---- golangci-lint
 
-GOLANGCI_LINT_VERSION := 'v2.5.0'
+GOLANGCI_LINT_VERSION := 'v2.6.2'
 GOLANGCI_LINT_PATH := BIN / 'golangci-lint'
 GOLANGCI_LINT := GOLANGCI_LINT_PATH + '@' + GOLANGCI_LINT_VERSION
 
@@ -26,7 +26,7 @@ lint:
 
 # ---- fieldalignment
 
-FIELDALIGNMENT_VERSION := 'v0.38.0'
+FIELDALIGNMENT_VERSION := 'v0.39.0'
 FIELDALIGNMENT_PATH := BIN / 'fieldalignment'
 FIELDALIGNMENT := FIELDALIGNMENT_PATH + '@' + FIELDALIGNMENT_VERSION
 
@@ -38,7 +38,7 @@ install-fieldalignment:
 [doc('Reorder struct fields using `fieldalignment` to improve memory layout')]
 [group('code')]
 align:
-    @if test ! -e {{ FIELDALIGNMENT }}; then just install-fieldaligment; fi
+    @if test ! -e {{ FIELDALIGNMENT }}; then just install-fieldalignment; fi
     {{ FIELDALIGNMENT }} --fix ./...
 
 # ---- godoc
