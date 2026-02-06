@@ -9,11 +9,12 @@ default:
 
 # ---- golangci-lint
 
-GOLANGCI_LINT_VERSION := 'v2.6.2'
+GOLANGCI_LINT_VERSION := 'v2.8.0'
 GOLANGCI_LINT_PATH := BIN / 'golangci-lint'
 GOLANGCI_LINT := GOLANGCI_LINT_PATH + '@' + GOLANGCI_LINT_VERSION
 
 [private]
+[doc('https://github.com/golangci/golangci-lint')]
 install-golangci-lint:
     curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b {{ BIN }} {{ GOLANGCI_LINT_VERSION }}
     mv {{ GOLANGCI_LINT_PATH }} {{ GOLANGCI_LINT }}
@@ -24,40 +25,23 @@ lint:
     @if test ! -e {{ GOLANGCI_LINT }}; then just install-golangci-lint; fi
     {{ GOLANGCI_LINT }} run ./...
 
-# ---- fieldalignment
+# ---- betteralign
 
-FIELDALIGNMENT_VERSION := 'v0.39.0'
-FIELDALIGNMENT_PATH := BIN / 'fieldalignment'
-FIELDALIGNMENT := FIELDALIGNMENT_PATH + '@' + FIELDALIGNMENT_VERSION
+BETTERALIGN_VERSION := 'v0.8.3'
+BETTERALIGN_PATH := BIN / 'betteralign'
+BETTERALIGN := BETTERALIGN_PATH + '@' + BETTERALIGN_VERSION
 
 [private]
-install-fieldalignment:
-    GOBIN={{ BIN }} go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@{{ FIELDALIGNMENT_VERSION }}
-    mv {{ FIELDALIGNMENT_PATH }} {{ FIELDALIGNMENT }}
+[doc('https://github.com/dkorunic/betteralign')]
+install-betteralign:
+    GOBIN={{ BIN }} go install github.com/dkorunic/betteralign/cmd/betteralign@{{ BETTERALIGN_VERSION }}
+    mv {{ BETTERALIGN_PATH }} {{ BETTERALIGN }}
 
-[doc('Reorder struct fields using `fieldalignment` to improve memory layout')]
+[doc('Reorder struct fields using `betteralign` to improve memory layout')]
 [group('code')]
 align:
-    @if test ! -e {{ FIELDALIGNMENT }}; then just install-fieldalignment; fi
-    {{ FIELDALIGNMENT }} --fix ./...
-
-# ---- godoc
-
-GODOC_VERSION := 'v0.36.0'
-GODOC_PATH := BIN / 'godoc'
-GODOC := GODOC_PATH + '@' + GODOC_VERSION
-
-[private]
-install-godoc:
-    GOBIN={{ BIN }} go install golang.org/x/tools/cmd/godoc@{{ GODOC_VERSION }}
-    mv {{ GODOC_PATH }} {{ GODOC }}
-
-[doc('Run documentation server using `godoc`')]
-[group('docs')]
-docs port='6060':
-    @if test ! -e {{ GODOC }}; then just install-godoc; fi
-    @echo http://127.0.0.1:{{ port }}/pkg/github.com/therenotomorrow/ex/
-    {{ GODOC }} -http=:{{ port }}
+    @if test ! -e {{ BETTERALIGN }}; then just install-betteralign; fi
+    {{ BETTERALIGN }} -apply ./...
 
 # ---- testing
 

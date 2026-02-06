@@ -5,9 +5,6 @@ linters:
   disable:
     # deprecated
     - wsl
-    # because of min golang version support (current 1.21)
-    - copyloopvar
-    - intrange
   settings:
     depguard:
       rules:
